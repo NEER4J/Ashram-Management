@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Loader2, Settings, Database, LogOut, User } from "lucide-react";
+import { Loader2, Settings, Database, LogOut, User, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -34,6 +34,11 @@ const navigation = [
         title: "View Data",
         url: "/dashboard",
         icon: Database,
+      },
+      {
+        title: "Saved Sheets",
+        url: "/dashboard/saved-sheets",
+        icon: TrendingUp,
       },
     ],
   },
