@@ -15,7 +15,7 @@ interface SavedSheet {
     sheet_name: string;
     tab_name: string;
     spreadsheet_id: string;
-    data_json: SheetDataStructure;
+    data_json: SheetDataStructure | Record<string, SheetDataStructure>;
     created_at: string;
 }
 
@@ -57,6 +57,27 @@ export default function VisualizationPage() {
 
         setRefreshing(true);
         try {
+            // Check if it's a bulk sheet
+            const isBulk = sheet.tab_name === "ALL_TABS";
+
+            if (isBulk) {
+                // For bulk refresh, we need to call the bulk save endpoint again?
+                // Or we need a specific bulk refresh logic.
+                // Since we don't have a bulk refresh endpoint yet that updates an existing ID,
+                // and the user didn't explicitly ask for refresh logic update in the plan,
+                // I will defer this complex logic or just re-fetch all tabs.
+
+                // For now, let's just alert that refresh is not fully supported for bulk sheets yet
+                // or try to implement a basic version.
+
+                // Let's re-use the save-bulk logic but we need to update the existing record.
+                // This is getting complicated for a simple "refresh".
+                // I'll skip deep implementation of refresh for bulk for now to focus on visualization.
+                alert("Refresh is not yet supported for bulk saved sheets.");
+                setRefreshing(false);
+                return;
+            }
+
             // 1. Fetch fresh data from Google Sheets
             const dataRes = await fetch(
                 `/api/sheets/data?spreadsheetId=${sheet.spreadsheet_id}&range=${sheet.tab_name}&_t=${Date.now()}`
@@ -72,41 +93,6 @@ export default function VisualizationPage() {
             if (sheetData.length === 0) {
                 throw new Error("No data found in the sheet");
             }
-
-            // 2. Update the saved record in Supabase
-            // We use the save endpoint which handles transformation and updating
-            // Note: The save endpoint currently creates a NEW record or updates? 
-            // Let's check the save endpoint. It likely does an insert.
-            // Actually, we want to UPDATE the existing record.
-            // The current save endpoint might not support updating by ID.
-            // Let's look at the save endpoint logic.
-            // If it doesn't support update, we might need to modify it or delete/create.
-            // But wait, the user wants to "refresh" this specific visualization.
-
-            // Let's check if we can reuse the save endpoint or if we need a specific update logic.
-            // For now, let's assume we can use the save endpoint but we might need to pass the ID if we want to update.
-            // Or we can just create a new one? No, that changes the ID.
-
-            // Let's try to use the save endpoint but we might need to modify it to support updates if it doesn't.
-            // Actually, looking at the save endpoint code (I recall it), it does an insert.
-
-            // So we should probably add a PUT endpoint or modify the save endpoint.
-            // OR, we can just do it here if we had an update endpoint.
-
-            // Let's implement a specific update for this.
-            // Since we don't have a specific update endpoint, let's use the save endpoint but we need to make sure it updates if ID is provided?
-            // No, the save endpoint is for creating new saves usually.
-
-            // Let's create a new API route for updating: /api/sheets/saved/[id] (PUT)
-            // But I can't do that right now without creating a new file.
-
-            // Alternative: Delete old and create new? No, ID changes.
-
-            // Let's check the save endpoint code again to be sure.
-            // I'll assume for now I need to create a PUT handler in /api/sheets/saved/[id]/route.ts
-
-            // Wait, I can't check the file in the middle of replace_file_content.
-            // I will implement the UI first, and then I will add the PUT handler.
 
             const updateRes = await fetch(`/api/sheets/saved/${sheet.id}`, {
                 method: "PUT",
@@ -164,27 +150,19 @@ export default function VisualizationPage() {
         );
     }
 
-    // Prepare raw data for table view
-    const rawTableData: string[][] = [];
-    if (sheet.data_json.type === "financial") {
-        // Reconstruct table from structured data
-        rawTableData.push(sheet.data_json.headers);
-        sheet.data_json.data.forEach((row) => {
-            const tableRow = [row.category];
-            sheet.data_json.timePoints?.forEach((timePoint) => {
-                tableRow.push(row[timePoint]?.toString() || "");
-            });
-            if (row.total !== undefined) {
-                tableRow.push(row.total.toString());
-            }
-            rawTableData.push(tableRow);
+    // Determine if we have multiple sheets
+    const isBulk = sheet.tab_name === "ALL_TABS";
+    const sheetsToRender: { name: string; data: SheetDataStructure }[] = [];
+
+    if (isBulk) {
+        const dataMap = sheet.data_json as Record<string, SheetDataStructure>;
+        Object.entries(dataMap).forEach(([name, data]) => {
+            sheetsToRender.push({ name, data });
         });
     } else {
-        // Handle tabular data
-        rawTableData.push(sheet.data_json.headers);
-        sheet.data_json.data.forEach(row => {
-            const tableRow = sheet.data_json.headers.map(header => row[header]?.toString() || "");
-            rawTableData.push(tableRow);
+        sheetsToRender.push({
+            name: sheet.tab_name,
+            data: sheet.data_json as SheetDataStructure
         });
     }
 
@@ -193,10 +171,10 @@ export default function VisualizationPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                        Data Visualization
+                        {sheet.sheet_name}
                     </h1>
                     <p className="text-slate-600 mt-1">
-                        Interactive charts and data views for your saved sheet
+                        {isBulk ? "Visualizing all tabs" : `Visualizing ${sheet.tab_name}`}
                     </p>
                 </div>
                 <div className="flex gap-2">
@@ -221,39 +199,69 @@ export default function VisualizationPage() {
                 </div>
             </div>
 
-            <SheetChart
-                sheetData={sheet.data_json}
-                sheetName={sheet.sheet_name}
-                tabName={sheet.tab_name}
-            />
+            <div className="grid gap-8">
+                {sheetsToRender.map((item, index) => (
+                    <div key={index} className="space-y-4">
+                        <SheetChart
+                            sheetData={item.data}
+                            sheetName={sheet.sheet_name}
+                            tabName={item.name}
+                        />
 
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <Table className="h-5 w-5" />
-                                Data Table
-                            </CardTitle>
-                            <CardDescription>
-                                View the raw data in table format
-                            </CardDescription>
-                        </div>
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowTable(!showTable)}
-                        >
-                            {showTable ? "Hide" : "Show"} Table
-                        </Button>
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="flex items-center gap-2 text-base">
+                                            <Table className="h-4 w-4" />
+                                            Data Table - {item.name}
+                                        </CardTitle>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowTable(!showTable)}
+                                    >
+                                        {showTable ? "Hide" : "Show"} Table
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            {showTable && (
+                                <CardContent>
+                                    <DataTable data={transformToTableData(item.data)} />
+                                </CardContent>
+                            )}
+                        </Card>
                     </div>
-                </CardHeader>
-                {showTable && rawTableData.length > 0 && (
-                    <CardContent>
-                        <DataTable data={rawTableData} />
-                    </CardContent>
-                )}
-            </Card>
+                ))}
+            </div>
         </div>
     );
+}
+
+function transformToTableData(data: SheetDataStructure): string[][] {
+    const rawTableData: string[][] = [];
+    if (data.type === "financial") {
+        // Reconstruct table from structured data
+        rawTableData.push(data.headers);
+        data.data.forEach((row) => {
+            const tableRow = [row.category];
+            data.timePoints?.forEach((timePoint) => {
+                tableRow.push(row[timePoint]?.toString() || "");
+            });
+            if (row.total !== undefined) {
+                tableRow.push(row.total.toString());
+            }
+            rawTableData.push(tableRow);
+        });
+    } else {
+        // Handle tabular data
+        rawTableData.push(data.headers);
+        data.data.forEach(row => {
+            const tableRow = data.headers.map(header => row[header]?.toString() || "");
+            rawTableData.push(tableRow);
+        });
+    }
+    return rawTableData;
 }
 

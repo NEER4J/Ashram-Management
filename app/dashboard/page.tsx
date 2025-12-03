@@ -13,6 +13,7 @@ export default function DashboardPage() {
     const [isConnected, setIsConnected] = useState(false);
     const [loading, setLoading] = useState(true);
     const [sheetData, setSheetData] = useState<string[][]>([]);
+    const [bulkData, setBulkData] = useState<Record<string, any> | null>(null);
     const [loadingData, setLoadingData] = useState(false);
     const [saving, setSaving] = useState(false);
     const [currentSheetMeta, setCurrentSheetMeta] = useState<{
@@ -20,6 +21,8 @@ export default function DashboardPage() {
         tabName: string;
         sheetName: string;
     } | null>(null);
+
+    const [activeTab, setActiveTab] = useState<string>("");
 
     useEffect(() => {
         checkGoogleConnection();
@@ -41,22 +44,50 @@ export default function DashboardPage() {
         }
     };
 
+    // ... (existing useEffects)
+
     const handleSheetSelect = async (spreadsheetId: string, range: string, sheetName: string) => {
         setLoadingData(true);
+        setSheetData([]);
+        setBulkData(null);
+        setActiveTab("");
+
         try {
-            const res = await fetch(
-                `/api/sheets/data?spreadsheetId=${spreadsheetId}&range=${range}&_t=${Date.now()}`,
-            );
-            if (res.ok) {
-                const data = await res.json();
-                setSheetData(data.values || []);
-                setCurrentSheetMeta({
-                    spreadsheetId,
-                    tabName: range,
-                    sheetName,
-                });
+            if (range === "ALL_TABS") {
+                const res = await fetch(
+                    `/api/sheets/data-bulk?spreadsheetId=${spreadsheetId}&_t=${Date.now()}`,
+                );
+                if (res.ok) {
+                    const data = await res.json();
+                    setBulkData(data.data);
+                    // Set first tab as active
+                    const firstTab = Object.keys(data.data)[0];
+                    if (firstTab) setActiveTab(firstTab);
+
+                    setCurrentSheetMeta({
+                        spreadsheetId,
+                        tabName: "ALL_TABS",
+                        sheetName,
+                    });
+                } else {
+                    console.error("Failed to fetch bulk data");
+                }
             } else {
-                console.error("Failed to fetch data");
+                // ... (existing single sheet fetch)
+                const res = await fetch(
+                    `/api/sheets/data?spreadsheetId=${spreadsheetId}&range=${range}&_t=${Date.now()}`,
+                );
+                if (res.ok) {
+                    const data = await res.json();
+                    setSheetData(data.values || []);
+                    setCurrentSheetMeta({
+                        spreadsheetId,
+                        tabName: range,
+                        sheetName,
+                    });
+                } else {
+                    console.error("Failed to fetch data");
+                }
             }
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -66,25 +97,51 @@ export default function DashboardPage() {
     };
 
     const handleSaveSheet = async () => {
-        if (!currentSheetMeta || sheetData.length === 0) {
+        if (!currentSheetMeta) {
+            alert("No sheet selected");
+            return;
+        }
+
+        if (currentSheetMeta.tabName !== "ALL_TABS" && sheetData.length === 0) {
             alert("No data to save");
+            return;
+        }
+
+        if (currentSheetMeta.tabName === "ALL_TABS" && !bulkData) {
+            alert("No bulk data loaded");
             return;
         }
 
         setSaving(true);
         try {
-            const res = await fetch("/api/sheets/save", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    sheetData,
-                    spreadsheetId: currentSheetMeta.spreadsheetId,
-                    tabName: currentSheetMeta.tabName,
-                    sheetName: currentSheetMeta.sheetName,
-                }),
-            });
+            let res;
+            if (currentSheetMeta.tabName === "ALL_TABS") {
+                // Bulk save
+                res = await fetch("/api/sheets/save-bulk", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        spreadsheetId: currentSheetMeta.spreadsheetId,
+                        sheetName: currentSheetMeta.sheetName,
+                    }),
+                });
+            } else {
+                // Single save
+                res = await fetch("/api/sheets/save", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        sheetData,
+                        spreadsheetId: currentSheetMeta.spreadsheetId,
+                        tabName: currentSheetMeta.tabName,
+                        sheetName: currentSheetMeta.sheetName,
+                    }),
+                });
+            }
 
             if (res.ok) {
                 alert("Sheet saved successfully!");
@@ -102,6 +159,34 @@ export default function DashboardPage() {
         }
     };
 
+    // Helper to transform structured data back to table format for preview
+    const getPreviewData = (tabName: string): string[][] => {
+        if (!bulkData || !bulkData[tabName]) return [];
+        const data = bulkData[tabName];
+
+        const rawTableData: string[][] = [];
+        if (data.type === "financial") {
+            rawTableData.push(data.headers);
+            data.data.forEach((row: any) => {
+                const tableRow = [row.category];
+                data.timePoints?.forEach((timePoint: string) => {
+                    tableRow.push(row[timePoint]?.toString() || "");
+                });
+                if (row.total !== undefined && row.total !== null) {
+                    tableRow.push(row.total.toString());
+                }
+                rawTableData.push(tableRow);
+            });
+        } else {
+            rawTableData.push(data.headers);
+            data.data.forEach((row: any) => {
+                const tableRow = data.headers.map((header: string) => row[header]?.toString() || "");
+                rawTableData.push(tableRow);
+            });
+        }
+        return rawTableData;
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center p-8">
@@ -112,6 +197,7 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-6">
+            {/* ... (existing header and connect section) */}
             <div>
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sheets Dashboard</h1>
                 <p className="text-slate-600 mt-1">
@@ -168,20 +254,28 @@ export default function DashboardPage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        sheetData.length > 0 && (
+                        (sheetData.length > 0 || bulkData) && (
                             <Card>
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <CardTitle>Sheet Data</CardTitle>
+                                            <CardTitle>
+                                                {currentSheetMeta?.tabName === "ALL_TABS"
+                                                    ? "Bulk Save Selected"
+                                                    : "Sheet Data"}
+                                            </CardTitle>
                                             <CardDescription className="mt-1">
-                                                Your spreadsheet data displayed in a clean table format.
+                                                {currentSheetMeta?.tabName === "ALL_TABS"
+                                                    ? `Ready to save ${Object.keys(bulkData || {}).length} tabs from this spreadsheet.`
+                                                    : "Your spreadsheet data displayed in a clean table format."}
                                             </CardDescription>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                                                {sheetData.length - 1} rows
-                                            </span>
+                                            {currentSheetMeta?.tabName !== "ALL_TABS" && (
+                                                <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                                                    {sheetData.length - 1} rows
+                                                </span>
+                                            )}
                                             <Button
                                                 onClick={handleSaveSheet}
                                                 disabled={saving}
@@ -195,7 +289,9 @@ export default function DashboardPage() {
                                                 ) : (
                                                     <>
                                                         <Save className="h-4 w-4 mr-2" />
-                                                        Save to Database
+                                                        {currentSheetMeta?.tabName === "ALL_TABS"
+                                                            ? "Save All Tabs"
+                                                            : "Save to Database"}
                                                     </>
                                                 )}
                                             </Button>
@@ -203,7 +299,29 @@ export default function DashboardPage() {
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <DataTable data={sheetData} />
+                                    {currentSheetMeta?.tabName === "ALL_TABS" && bulkData ? (
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b">
+                                                {Object.keys(bulkData).map((tabName) => (
+                                                    <button
+                                                        key={tabName}
+                                                        onClick={() => setActiveTab(tabName)}
+                                                        className={`px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${activeTab === tabName
+                                                            ? "bg-blue-100 text-blue-700"
+                                                            : "text-slate-600 hover:bg-slate-100"
+                                                            }`}
+                                                    >
+                                                        {tabName}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            {activeTab && (
+                                                <DataTable data={getPreviewData(activeTab)} />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <DataTable data={sheetData} />
+                                    )}
                                 </CardContent>
                             </Card>
                         )

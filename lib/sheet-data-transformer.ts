@@ -86,11 +86,8 @@ function detectFinancialSheet(data: string[][]): boolean {
             if (cell && monthNames.some(m => cell.toLowerCase().includes(m))) matchCount++;
         });
         // If row 0 has fewer than 2 month-like things, assume it's NOT financial headers
-        // unless it has "Total" and categories
         if (matchCount < 2) {
-            // Check for "Total" and categories to be sure
-            const hasTotal = row.some(c => c && c.toLowerCase().includes('total'));
-            if (!hasTotal) return false;
+            return false;
         }
     }
 
@@ -158,17 +155,10 @@ function transformFinancialData(rawData: string[][]): SheetDataStructure {
         // Skip Total/Balance
         if (cellLower.includes('total') || cellLower.includes('balance')) return;
 
-        // Check if it looks like a month
-        const isMonth = monthNames.some(month =>
-            cellLower === month ||
-            cellLower.startsWith(month + ' ') ||
-            cellLower.startsWith(month + '-')
-        );
-
-        if (isMonth) {
-            timePoints.push(cell.trim());
-            timePointIndices.push(index);
-        }
+        // Include all other columns as data points (timePoints)
+        // We previously filtered for months, but that excludes other valid columns like "Amount", "Cost", etc.
+        timePoints.push(cell.trim());
+        timePointIndices.push(index);
     });
 
     // Process each row after the header

@@ -37,6 +37,8 @@ export function SheetSelector({ onSelect }: SheetSelectorProps) {
     const [isLoadingFiles, setIsLoadingFiles] = useState(false);
     const [isLoadingTabs, setIsLoadingTabs] = useState(false);
 
+    const [selectAll, setSelectAll] = useState(false);
+
     // Fetch list of sheets on mount
     useEffect(() => {
         async function fetchFiles() {
@@ -86,8 +88,12 @@ export function SheetSelector({ onSelect }: SheetSelectorProps) {
     }, [selectedFileId]);
 
     const handleLoadData = () => {
-        if (selectedFileId && selectedTabTitle && selectedFileName) {
-            onSelect(selectedFileId, selectedTabTitle, selectedFileName);
+        if (selectedFileId && selectedFileName) {
+            if (selectAll) {
+                onSelect(selectedFileId, "ALL_TABS", selectedFileName);
+            } else if (selectedTabTitle) {
+                onSelect(selectedFileId, selectedTabTitle, selectedFileName);
+            }
         }
     };
 
@@ -125,37 +131,54 @@ export function SheetSelector({ onSelect }: SheetSelectorProps) {
 
             {selectedFileId && (
                 <div className="grid gap-2">
-                    <Label htmlFor="sheet-tab">Select Worksheet (Tab)</Label>
-                    <Select onValueChange={setSelectedTabTitle} value={selectedTabTitle}>
-                        <SelectTrigger id="sheet-tab" className="w-full">
-                            <SelectValue placeholder="Select a tab" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {isLoadingTabs ? (
-                                <div className="flex items-center justify-center p-2">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                </div>
-                            ) : (
-                                tabs.map((tab) => (
-                                    <SelectItem
-                                        key={tab.properties.sheetId}
-                                        value={tab.properties.title}
-                                    >
-                                        {tab.properties.title}
-                                    </SelectItem>
-                                ))
-                            )}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="sheet-tab">Select Worksheet (Tab)</Label>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="select-all"
+                                checked={selectAll}
+                                onChange={(e) => setSelectAll(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <label htmlFor="select-all" className="text-sm text-slate-600 cursor-pointer">
+                                Select All Tabs
+                            </label>
+                        </div>
+                    </div>
+
+                    {!selectAll && (
+                        <Select onValueChange={setSelectedTabTitle} value={selectedTabTitle}>
+                            <SelectTrigger id="sheet-tab" className="w-full">
+                                <SelectValue placeholder="Select a tab" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {isLoadingTabs ? (
+                                    <div className="flex items-center justify-center p-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    </div>
+                                ) : (
+                                    tabs.map((tab) => (
+                                        <SelectItem
+                                            key={tab.properties.sheetId}
+                                            value={tab.properties.title}
+                                        >
+                                            {tab.properties.title}
+                                        </SelectItem>
+                                    ))
+                                )}
+                            </SelectContent>
+                        </Select>
+                    )}
                 </div>
             )}
 
             <Button
                 onClick={handleLoadData}
-                disabled={!selectedFileId || !selectedTabTitle}
+                disabled={!selectedFileId || (!selectAll && !selectedTabTitle)}
                 className="w-full bg-blue-600 hover:bg-blue-700"
             >
-                Load Data
+                {selectAll ? "Load All Tabs" : "Load Data"}
             </Button>
         </div>
     );
