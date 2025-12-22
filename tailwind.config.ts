@@ -51,6 +51,13 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        Ashram: {
+          beige: "#fbf9ef",
+          maroon: "#3c0212",
+        },
+      },
+      fontFamily: {
+        serif: ["PT Serif", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

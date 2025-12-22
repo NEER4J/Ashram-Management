@@ -5,6 +5,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -16,13 +18,22 @@ export default function Page() {
               <CardTitle className="text-2xl">
                 Thank you for signing up!
               </CardTitle>
-              <CardDescription>Check your email to confirm</CardDescription>
+              <CardDescription>Your account has been created successfully</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-4">
               <p className="text-sm text-muted-foreground">
-                You&apos;ve successfully signed up. Please check your email to
-                confirm your account before signing in.
+                You can now sign in to your account and start using Ashram Management CRM.
               </p>
+              <Button 
+                asChild 
+                className="w-full"
+                style={{
+                  backgroundColor: "#3c0212",
+                  color: "#fef9fb",
+                }}
+              >
+                <Link href="/auth/login">Sign In</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>

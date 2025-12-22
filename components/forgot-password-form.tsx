@@ -83,7 +83,15 @@ export function ForgotPasswordForm({
                   />
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading}
+                  style={{
+                    backgroundColor: "#3c0212",
+                    color: "#fef9fb",
+                  }}
+                >
                   {isLoading ? "Sending..." : "Send reset email"}
                 </Button>
               </div>
@@ -92,6 +100,7 @@ export function ForgotPasswordForm({
                 <Link
                   href="/auth/login"
                   className="underline underline-offset-4"
+                  style={{ color: "#3c0212" }}
                 >
                   Login
                 </Link>

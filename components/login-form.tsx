@@ -76,6 +76,7 @@ export function LoginForm({
                   <Link
                     href="/auth/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    style={{ color: "#3c0212" }}
                   >
                     Forgot your password?
                   </Link>
@@ -89,7 +90,15 @@ export function LoginForm({
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+                style={{
+                  backgroundColor: "#3c0212",
+                  color: "#fef9fb",
+                }}
+              >
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </div>
@@ -98,6 +107,7 @@ export function LoginForm({
               <Link
                 href="/auth/sign-up"
                 className="underline underline-offset-4"
+                style={{ color: "#3c0212" }}
               >
                 Sign up
               </Link>

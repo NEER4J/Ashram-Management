@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Loader2, Settings, Database, LogOut, User, TrendingUp } from "lucide-react";
+import { Loader2, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -26,33 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-const navigation = [
-  {
-    title: "Data",
-    items: [
-      {
-        title: "View Data",
-        url: "/dashboard",
-        icon: Database,
-      },
-      {
-        title: "Saved Sheets",
-        url: "/dashboard/saved-sheets",
-        icon: TrendingUp,
-      },
-    ],
-  },
-  {
-    title: "Settings",
-    items: [
-      {
-        title: "Google Account",
-        url: "/dashboard/google-account",
-        icon: Settings,
-      },
-    ],
-  },
-];
+const navigation: Array<{ title: string; items: Array<{ title: string; url: string; icon: any }> }> = [];
 
 export default function DashboardLayout({
   children,
@@ -98,36 +72,42 @@ export default function DashboardLayout({
     <SidebarProvider>
       <Sidebar variant="inset">
         <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-2 border-b">
+          <div className="flex items-center gap-2 px-2 py-2 border-b" style={{ borderColor: "#3c0212" }}>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Sheet App</span>
+              <span className="truncate font-semibold" style={{ color: "#3c0212" }}>Ashram Management CRM</span>
               <span className="truncate text-xs">Dashboard</span>
             </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
-          {navigation.map((group) => (
-            <SidebarGroup key={group.title}>
-              <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {group.items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={pathname === item.url}
-                      >
-                        <Link href={item.url}>
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
+          {navigation.length > 0 ? (
+            navigation.map((group) => (
+              <SidebarGroup key={group.title}>
+                <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={pathname === item.url}
+                        >
+                          <Link href={item.url}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))
+          ) : (
+            <div className="px-2 py-4 text-sm text-slate-500">
+              Navigation items will appear here
+            </div>
+          )}
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
@@ -141,7 +121,8 @@ export default function DashboardLayout({
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
-                className="w-full justify-start gap-2 h-8 px-2 text-sm font-normal"
+                className="w-full justify-start gap-2 h-8 px-2 text-sm font-normal hover:bg-opacity-10"
+                style={{ color: "#3c0212" }}
               >
                 <LogOut className="size-4" />
                 Sign out
