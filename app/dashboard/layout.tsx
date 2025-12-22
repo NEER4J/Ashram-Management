@@ -26,7 +26,42 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-const navigation: Array<{ title: string; items: Array<{ title: string; url: string; icon: any }> }> = [];
+import {
+  LayoutDashboard,
+  Users,
+  Banknote,
+  CalendarCheck,
+  CalendarDays,
+  UserCog,
+  Package,
+  FileText
+} from "lucide-react";
+
+const navigation = [
+  {
+    title: "Core Operations",
+    items: [
+      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+      { title: "Devotees", url: "/dashboard/devotees", icon: Users },
+      { title: "Donations", url: "/dashboard/donations", icon: Banknote },
+      { title: "Puja Booking", url: "/dashboard/pujas", icon: CalendarCheck },
+    ],
+  },
+  {
+    title: "Management",
+    items: [
+      { title: "Events", url: "/dashboard/events", icon: CalendarDays },
+      { title: "Staff & Priests", url: "/dashboard/staff", icon: UserCog },
+      { title: "Inventory", url: "/dashboard/inventory", icon: Package },
+    ],
+  },
+  {
+    title: "Reports",
+    items: [
+      { title: "Reports", url: "/reports", icon: FileText },
+    ],
+  }
+];
 
 export default function DashboardLayout({
   children,
