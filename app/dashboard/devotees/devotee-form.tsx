@@ -23,7 +23,7 @@ export function DevoteeForm({ initialData, onSuccess }: DevoteeFormProps) {
     const supabase = createClient()
 
     const form = useForm<DevoteeFormValues>({
-        resolver: zodResolver(devoteeSchema),
+        resolver: zodResolver(devoteeSchema) as any,
         defaultValues: {
             first_name: initialData?.first_name || "",
             middle_name: initialData?.middle_name || "",
@@ -139,7 +139,31 @@ export function DevoteeForm({ initialData, onSuccess }: DevoteeFormProps) {
                                 <SelectContent>
                                     <SelectItem value="Ashwini">Ashwini</SelectItem>
                                     <SelectItem value="Bharani">Bharani</SelectItem>
-                                    {/* We will populate this from DB later */}
+                                    <SelectItem value="Krittika">Krittika</SelectItem>
+                                    <SelectItem value="Rohini">Rohini</SelectItem>
+                                    <SelectItem value="Mrigashira">Mrigashira</SelectItem>
+                                    <SelectItem value="Ardra">Ardra</SelectItem>
+                                    <SelectItem value="Punarvasu">Punarvasu</SelectItem>
+                                    <SelectItem value="Pushya">Pushya</SelectItem>
+                                    <SelectItem value="Ashlesha">Ashlesha</SelectItem>
+                                    <SelectItem value="Magha">Magha</SelectItem>
+                                    <SelectItem value="Purva Phalguni">Purva Phalguni</SelectItem>
+                                    <SelectItem value="Uttara Phalguni">Uttara Phalguni</SelectItem>
+                                    <SelectItem value="Hasta">Hasta</SelectItem>
+                                    <SelectItem value="Chitra">Chitra</SelectItem>
+                                    <SelectItem value="Swati">Swati</SelectItem>
+                                    <SelectItem value="Vishakha">Vishakha</SelectItem>
+                                    <SelectItem value="Anuradha">Anuradha</SelectItem>
+                                    <SelectItem value="Jyeshtha">Jyeshtha</SelectItem>
+                                    <SelectItem value="Mula">Mula</SelectItem>
+                                    <SelectItem value="Purva Ashadha">Purva Ashadha</SelectItem>
+                                    <SelectItem value="Uttara Ashadha">Uttara Ashadha</SelectItem>
+                                    <SelectItem value="Shravana">Shravana</SelectItem>
+                                    <SelectItem value="Dhanishta">Dhanishta</SelectItem>
+                                    <SelectItem value="Shatabhisha">Shatabhisha</SelectItem>
+                                    <SelectItem value="Purva Bhadrapada">Purva Bhadrapada</SelectItem>
+                                    <SelectItem value="Uttara Bhadrapada">Uttara Bhadrapada</SelectItem>
+                                    <SelectItem value="Revati">Revati</SelectItem>
                                 </SelectContent>
                             </Select>
                         </FormItem>
@@ -158,7 +182,8 @@ export function DevoteeForm({ initialData, onSuccess }: DevoteeFormProps) {
                 />
             </div>
 
-            <FormField
+            {/* Membership Type field hidden for now */}
+            {/* <FormField
                 control={form.control}
                 name="membership_type"
                 render={({ field }) => (
@@ -180,7 +205,7 @@ export function DevoteeForm({ initialData, onSuccess }: DevoteeFormProps) {
                         <FormMessage />
                     </FormItem>
                 )}
-            />
+            /> */}
 
         </FormWrapper>
     )

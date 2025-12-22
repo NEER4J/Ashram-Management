@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} ${ptSerif.variable} antialiased`}>
+      <body className={`${geistSans.className} ${ptSerif.variable} antialiased`} style={{ backgroundColor: "#3c0212" }}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

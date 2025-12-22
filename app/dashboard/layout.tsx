@@ -108,9 +108,8 @@ export default function DashboardLayout({
       <Sidebar variant="inset">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-2 border-b" style={{ borderColor: "#3c0212" }}>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold" style={{ color: "#3c0212" }}>Ashram Management CRM</span>
-              <span className="truncate text-xs">Dashboard</span>
+            <div className="grid flex-1 text-left text-lg leading-tight">
+              <span className="truncate font-semibold text-white">Ashram Management</span>
             </div>
           </div>
         </SidebarHeader>
@@ -147,7 +146,7 @@ export default function DashboardLayout({
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <div className="flex items-center gap-2 px-2 py-1.5 text-sm">
+              <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-white">
                 <User className="size-4" />
                 <span className="truncate">{user?.email}</span>
               </div>
@@ -156,8 +155,7 @@ export default function DashboardLayout({
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
-                className="w-full justify-start gap-2 h-8 px-2 text-sm font-normal hover:bg-opacity-10"
-                style={{ color: "#3c0212" }}
+                className="w-full justify-start gap-2 h-8 px-2 text-sm font-normal hover:bg-opacity-10 text-white hover:text-white bg-white/20"
               >
                 <LogOut className="size-4" />
                 Sign out
@@ -168,13 +166,13 @@ export default function DashboardLayout({
         <SidebarRail />
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 md:hidden flex">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 ">
           {children}
         </div>
       </SidebarInset>

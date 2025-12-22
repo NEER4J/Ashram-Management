@@ -43,7 +43,11 @@ export function FormWrapper<T extends import("react-hook-form").FieldValues>({
                     </div>
 
                     <div className="flex justify-end pt-4">
-                        <Button type="submit" disabled={loading}>
+                        <Button 
+                            type="submit" 
+                            disabled={loading}
+                            style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
+                        >
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {submitLabel}
                         </Button>

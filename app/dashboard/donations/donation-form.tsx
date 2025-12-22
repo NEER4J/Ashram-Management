@@ -55,17 +55,57 @@ export function DonationForm({ initialData, onSuccess }: DonationFormProps) {
             devotee_id: initialData?.devotee_id ?? "",
             transaction_ref: initialData?.transaction_ref ?? "",
             purpose: initialData?.purpose ?? "",
-            category_id: initialData?.category_id ?? "",
+            category_id: initialData?.category_id ?? undefined,
             receipt_generated: initialData?.receipt_generated ?? false
         }
     })
 
+    const generateDonationCode = async (): Promise<string> => {
+        const year = new Date().getFullYear()
+        const prefix = `DON-${year}-`
+
+        // Get the latest donation code for this year
+        const { data: latestDonation, error } = await supabase
+            .from("donations")
+            .select("donation_code")
+            .like("donation_code", `${prefix}%`)
+            .order("donation_code", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+        let nextNumber = 1
+        if (!error && latestDonation?.donation_code) {
+            // Extract the number from the code (e.g., "DON-2024-0123" -> 123)
+            const match = latestDonation.donation_code.match(/-(\d+)$/)
+            if (match) {
+                nextNumber = parseInt(match[1], 10) + 1
+            }
+        }
+
+        // Format with leading zeros (e.g., 0001, 0002, etc.)
+        return `${prefix}${nextNumber.toString().padStart(4, "0")}`
+    }
+
     async function onSubmit(data: DonationFormValues) {
         setLoading(true)
         try {
+            // Convert empty strings to null for optional UUID fields (PostgreSQL requires null, not empty strings)
+            const submitData: any = {
+                ...data,
+            }
+            // Handle optional UUID fields - convert empty strings to null
+            if (!submitData.category_id || submitData.category_id.trim() === "") {
+                submitData.category_id = null
+            }
+
+            // Generate donation code only for new donations
+            if (!initialData?.id) {
+                submitData.donation_code = await generateDonationCode()
+            }
+
             const { error } = initialData?.id
-                ? await supabase.from("donations").update(data).eq("id", initialData.id)
-                : await supabase.from("donations").insert(data)
+                ? await supabase.from("donations").update(submitData).eq("id", initialData.id)
+                : await supabase.from("donations").insert(submitData)
 
             if (error) throw error
 
@@ -86,6 +126,14 @@ export function DonationForm({ initialData, onSuccess }: DonationFormProps) {
             loading={loading}
             submitLabel={initialData ? "Update Donation" : "Record Donation"}
         >
+            {initialData?.donation_code && (
+                <div className="rounded-md border p-4 bg-slate-50">
+                    <div className="text-sm font-medium text-slate-600 mb-1">Donation ID</div>
+                    <div className="text-lg font-mono font-semibold text-slate-900">
+                        {initialData.donation_code}
+                    </div>
+                </div>
+            )}
             <FormField
                 control={form.control}
                 name="devotee_id"

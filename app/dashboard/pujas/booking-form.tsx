@@ -69,6 +69,7 @@ export function PujaBookingForm({ initialData, onSuccess }: PujaBookingFormProps
             puja_time: initialData?.puja_time || "",
             devotee_id: initialData?.devotee_id || "",
             puja_id: initialData?.puja_id || "",
+            assigned_priest_id: initialData?.assigned_priest_id || undefined,
         }
     })
 
@@ -86,9 +87,18 @@ export function PujaBookingForm({ initialData, onSuccess }: PujaBookingFormProps
     async function onSubmit(data: PujaBookingFormValues) {
         setLoading(true)
         try {
+            // Convert empty strings to null for optional UUID fields (PostgreSQL requires null, not empty strings)
+            const submitData: any = {
+                ...data,
+            }
+            // Handle optional UUID fields - convert empty strings to null
+            if (!submitData.assigned_priest_id || submitData.assigned_priest_id.trim() === "") {
+                submitData.assigned_priest_id = null
+            }
+
             const { error } = initialData?.id
-                ? await supabase.from("puja_bookings").update(data).eq("id", initialData.id)
-                : await supabase.from("puja_bookings").insert(data)
+                ? await supabase.from("puja_bookings").update(submitData).eq("id", initialData.id)
+                : await supabase.from("puja_bookings").insert(submitData)
 
             if (error) throw error
 

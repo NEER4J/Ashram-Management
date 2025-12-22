@@ -26,7 +26,7 @@ export function StaffForm({ initialData, onSuccess }: StaffFormProps) {
     const form = useForm<StaffFormValues>({
         resolver: zodResolver(staffSchema) as any,
         defaultValues: {
-            role: initialData?.role || "Priest",
+            role: initialData?.role || "Pandit ji",
             is_active: initialData?.is_active ?? true,
             first_name: initialData?.first_name || "",
             last_name: initialData?.last_name || "",
@@ -124,7 +124,7 @@ export function StaffForm({ initialData, onSuccess }: StaffFormProps) {
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="Priest">Priest</SelectItem>
+                                <SelectItem value="Pandit ji">Pandit ji</SelectItem>
                                 <SelectItem value="Admin">Admin</SelectItem>
                                 <SelectItem value="Manager">Manager</SelectItem>
                                 <SelectItem value="Staff">Staff</SelectItem>
