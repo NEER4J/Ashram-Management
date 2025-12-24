@@ -19,6 +19,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
@@ -34,7 +37,18 @@ import {
   CalendarDays,
   UserCog,
   Package,
-  FileText
+  FileText,
+  Calculator,
+  BookOpen,
+  Receipt,
+  Building2,
+  Wallet,
+  FileSpreadsheet,
+  TrendingUp,
+  Scale,
+  DollarSign,
+  ChevronRight,
+  ChevronDown
 } from "lucide-react";
 
 const navigation = [
@@ -43,7 +57,6 @@ const navigation = [
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
       { title: "Devotees", url: "/dashboard/devotees", icon: Users },
-      { title: "Donations", url: "/dashboard/donations", icon: Banknote },
       { title: "Puja Booking", url: "/dashboard/pujas", icon: CalendarCheck },
     ],
   },
@@ -53,6 +66,26 @@ const navigation = [
       { title: "Events", url: "/dashboard/events", icon: CalendarDays },
       { title: "Staff & Priests", url: "/dashboard/staff", icon: UserCog },
       { title: "Inventory", url: "/dashboard/inventory", icon: Package },
+    ],
+  },
+  {
+    title: "Accounting & Finance",
+    isCollapsible: true,
+    mainUrl: "/dashboard/accounting",
+    items: [
+      { title: "Accounting Dashboard", url: "/dashboard/accounting", icon: Wallet },
+      { title: "Donations", url: "/dashboard/donations", icon: Banknote },
+      { title: "Chart of Accounts", url: "/dashboard/accounting/chart-of-accounts", icon: BookOpen },
+      { title: "General Ledger", url: "/dashboard/accounting/general-ledger", icon: FileSpreadsheet },
+      { title: "Journal Entries", url: "/dashboard/accounting/journal-entries", icon: Calculator },
+      { title: "Bank Accounts", url: "/dashboard/accounting/bank-accounts", icon: Building2 },
+      { title: "Vendors", url: "/dashboard/accounting/vendors", icon: Users },
+      { title: "Bills (Payable)", url: "/dashboard/accounting/bills", icon: Receipt },
+      { title: "Invoices (Receivable)", url: "/dashboard/accounting/invoices", icon: FileText },
+      { title: "Expenses", url: "/dashboard/accounting/expenses", icon: DollarSign },
+      { title: "Budgets", url: "/dashboard/accounting/budgets", icon: TrendingUp },
+      { title: "GST Management", url: "/dashboard/accounting/gst", icon: Receipt },
+      { title: "Financial Reports", url: "/dashboard/accounting/reports", icon: Scale },
     ],
   },
   {
@@ -70,6 +103,7 @@ export default function DashboardLayout({
 }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [accountingOpen, setAccountingOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
@@ -89,6 +123,13 @@ export default function DashboardLayout({
 
     checkUser();
   }, [router, supabase]);
+
+  // Auto-open accounting menu when on accounting pages
+  useEffect(() => {
+    if (pathname.startsWith("/dashboard/accounting") || pathname.startsWith("/dashboard/donations")) {
+      setAccountingOpen(true);
+    }
+  }, [pathname]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -115,28 +156,70 @@ export default function DashboardLayout({
         </SidebarHeader>
         <SidebarContent>
           {navigation.length > 0 ? (
-            navigation.map((group) => (
-              <SidebarGroup key={group.title}>
-                <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {group.items.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={pathname === item.url}
-                        >
-                          <Link href={item.url}>
-                            <item.icon />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            ))
+            navigation.map((group) => {
+              const isAccountingGroup = group.isCollapsible;
+              const isActive = isAccountingGroup && group.items.some(item => pathname === item.url || pathname.startsWith("/dashboard/accounting") || pathname.startsWith("/dashboard/donations"));
+              
+              return (
+                <SidebarGroup key={group.title}>
+                  <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {isAccountingGroup ? (
+                        <>
+                          <SidebarMenuItem>
+                            <SidebarMenuButton
+                              onClick={() => setAccountingOpen(!accountingOpen)}
+                              isActive={isActive}
+                              className="cursor-pointer"
+                            >
+                              {accountingOpen ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                              <Wallet className="h-4 w-4" />
+                              <span>Accounting & Finance</span>
+                            </SidebarMenuButton>
+                            {accountingOpen && (
+                              <SidebarMenuSub>
+                                {group.items.map((item) => (
+                                  <SidebarMenuSubItem key={item.title}>
+                                    <SidebarMenuSubButton
+                                      asChild
+                                      isActive={pathname === item.url}
+                                    >
+                                      <Link href={item.url}>
+                                        <item.icon className="h-4 w-4" />
+                                        <span>{item.title}</span>
+                                      </Link>
+                                    </SidebarMenuSubButton>
+                                  </SidebarMenuSubItem>
+                                ))}
+                              </SidebarMenuSub>
+                            )}
+                          </SidebarMenuItem>
+                        </>
+                      ) : (
+                        group.items.map((item) => (
+                          <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={pathname === item.url}
+                            >
+                              <Link href={item.url}>
+                                <item.icon />
+                                <span>{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))
+                      )}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              );
+            })
           ) : (
             <div className="px-2 py-4 text-sm text-slate-500">
               Navigation items will appear here

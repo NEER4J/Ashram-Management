@@ -198,6 +198,12 @@ export interface Database {
                     created_by?: string | null
                 }
             }
+            // Accounting & Finance Module Tables
+            // Note: The following accounting tables are available:
+            // - chart_of_accounts, general_ledger, journal_entries, journal_entry_lines
+            // - bank_accounts, bank_transactions, vendors, bills, bill_payments
+            // - invoices, invoice_payments, expenses, budgets, gst_returns, financial_periods
+            // Types can be generated from Supabase CLI or added manually as needed
             // Add other tables as needed based on usage, keeping it minimal for now to save tokens
         }
     }
