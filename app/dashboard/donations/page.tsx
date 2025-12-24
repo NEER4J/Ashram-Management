@@ -208,7 +208,11 @@ export default function DonationsPage() {
                         </SheetHeader>
                         <div className="py-6">
                             <DonationForm
-                                initialData={editingDonation || undefined}
+                                initialData={editingDonation ? {
+                                    ...editingDonation,
+                                    payment_mode: editingDonation.payment_mode as "Cash" | "Cheque" | "Online Transfer" | "UPI" | "Card" | "DD",
+                                    payment_status: editingDonation.payment_status as "Completed" | "Pending" | "Failed" | "Refunded",
+                                } : undefined}
                                 onSuccess={() => {
                                     setIsOpen(false)
                                     setEditingDonation(null)

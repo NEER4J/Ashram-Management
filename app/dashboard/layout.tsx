@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2, LogOut, User } from "lucide-react";
@@ -71,9 +71,7 @@ const navigation = [
   {
     title: "Accounting & Finance",
     isCollapsible: true,
-    mainUrl: "/dashboard/accounting",
     items: [
-      { title: "Accounting Dashboard", url: "/dashboard/accounting", icon: Wallet },
       { title: "Donations", url: "/dashboard/donations", icon: Banknote },
       { title: "Chart of Accounts", url: "/dashboard/accounting/chart-of-accounts", icon: BookOpen },
       { title: "General Ledger", url: "/dashboard/accounting/general-ledger", icon: FileSpreadsheet },
@@ -104,8 +102,10 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [accountingOpen, setAccountingOpen] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const prevPathnameRef = useRef(pathname);
   const supabase = createClient();
 
   useEffect(() => {
@@ -130,6 +130,20 @@ export default function DashboardLayout({
       setAccountingOpen(true);
     }
   }, [pathname]);
+
+  // Track navigation state
+  useEffect(() => {
+    // If pathname changed, navigation completed
+    if (prevPathnameRef.current !== pathname) {
+      setIsNavigating(false);
+      prevPathnameRef.current = pathname;
+    }
+  }, [pathname]);
+
+  // Handle link clicks to show loading
+  const handleLinkClick = () => {
+    setIsNavigating(true);
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -173,15 +187,19 @@ export default function DashboardLayout({
                               isActive={isActive}
                               className="cursor-pointer"
                             >
-                              {accountingOpen ? (
-                                <ChevronDown className="h-4 w-4" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4" />
-                              )}
+                              <ChevronRight 
+                                className={`h-4 w-4 transition-transform duration-200 ${
+                                  accountingOpen ? "rotate-90" : "rotate-0"
+                                }`}
+                              />
                               <Wallet className="h-4 w-4" />
                               <span>Accounting & Finance</span>
                             </SidebarMenuButton>
-                            {accountingOpen && (
+                            <div
+                              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                accountingOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+                              }`}
+                            >
                               <SidebarMenuSub>
                                 {group.items.map((item) => (
                                   <SidebarMenuSubItem key={item.title}>
@@ -189,7 +207,7 @@ export default function DashboardLayout({
                                       asChild
                                       isActive={pathname === item.url}
                                     >
-                                      <Link href={item.url}>
+                                      <Link href={item.url} onClick={handleLinkClick}>
                                         <item.icon className="h-4 w-4" />
                                         <span>{item.title}</span>
                                       </Link>
@@ -197,7 +215,7 @@ export default function DashboardLayout({
                                   </SidebarMenuSubItem>
                                 ))}
                               </SidebarMenuSub>
-                            )}
+                            </div>
                           </SidebarMenuItem>
                         </>
                       ) : (
@@ -207,7 +225,7 @@ export default function DashboardLayout({
                               asChild
                               isActive={pathname === item.url}
                             >
-                              <Link href={item.url}>
+                              <Link href={item.url} onClick={handleLinkClick}>
                                 <item.icon />
                                 <span>{item.title}</span>
                               </Link>
@@ -255,7 +273,14 @@ export default function DashboardLayout({
             <Separator orientation="vertical" className="mr-2 h-4" />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 ">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 relative">
+          {isNavigating && (
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-lg z-50 flex items-center justify-center rounded-lg">
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            </div>
+          )}
           {children}
         </div>
       </SidebarInset>
