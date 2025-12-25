@@ -28,7 +28,7 @@ export default function Home() {
                 color: "#3c0212",
               }}
             >
-              <Link href="/auth/sign-up">Get Started</Link>
+              <Link href="/gurukul">Store</Link>
             </Button>
             <Button
               asChild

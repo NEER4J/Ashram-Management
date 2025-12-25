@@ -14,6 +14,7 @@ import {
     Package,
     ArrowRight,
     Loader2,
+    BookOpen,
 } from "lucide-react";
 
 interface DashboardStats {
@@ -26,6 +27,9 @@ interface DashboardStats {
     totalStaff: number;
     totalInventory: number;
     lowStockItems: number;
+    totalMaterials: number;
+    totalCourses: number;
+    totalOrders: number;
 }
 
 export default function DashboardPage() {
@@ -39,6 +43,9 @@ export default function DashboardPage() {
         totalStaff: 0,
         totalInventory: 0,
         lowStockItems: 0,
+        totalMaterials: 0,
+        totalCourses: 0,
+        totalOrders: 0,
     });
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
@@ -54,6 +61,9 @@ export default function DashboardPage() {
                     eventsResult,
                     staffResult,
                     inventoryResult,
+                    materialsResult,
+                    coursesResult,
+                    ordersResult,
                 ] = await Promise.all([
                     supabase.from("devotees").select("id", { count: "exact", head: true }),
                     supabase.from("donations").select("id, amount", { count: "exact" }),
@@ -63,6 +73,9 @@ export default function DashboardPage() {
                     supabase.from("events").select("id", { count: "exact", head: true }),
                     supabase.from("staff").select("id", { count: "exact", head: true }),
                     supabase.from("inventory_items").select("id, stock_quantity, min_stock_level", { count: "exact" }),
+                    supabase.from("study_materials").select("id", { count: "exact", head: true }),
+                    supabase.from("study_materials").select("id", { count: "exact", head: true }).eq("type", "Course"),
+                    supabase.from("study_material_orders").select("id", { count: "exact", head: true }),
                 ]);
 
                 const totalDonationAmount =
@@ -90,6 +103,9 @@ export default function DashboardPage() {
                     totalStaff: staffResult.count || 0,
                     totalInventory: inventoryResult.count || 0,
                     lowStockItems,
+                    totalMaterials: materialsResult.count || 0,
+                    totalCourses: coursesResult.count || 0,
+                    totalOrders: ordersResult.count || 0,
                 });
             } catch (error) {
                 console.error("Error fetching dashboard stats:", error);
@@ -143,6 +159,19 @@ export default function DashboardPage() {
             subtitle: stats.lowStockItems > 0 ? `${stats.lowStockItems} low stock` : "All stocked",
             icon: Package,
             link: "/dashboard/inventory",
+        },
+        {
+            title: "Study Materials",
+            value: stats.totalMaterials,
+            subtitle: `${stats.totalCourses} courses`,
+            icon: BookOpen,
+            link: "/dashboard/gurukul/study-materials",
+        },
+        {
+            title: "Gurukul Orders",
+            value: stats.totalOrders,
+            icon: BookOpen,
+            link: "/dashboard/gurukul/orders",
         },
     ];
 

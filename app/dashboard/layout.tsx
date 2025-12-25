@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Loader2, LogOut, User } from "lucide-react";
+import { Loader2, LogOut, User, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+type UserRole = 'admin' | 'user';
 
 import {
   Sidebar,
@@ -48,7 +49,8 @@ import {
   Scale,
   DollarSign,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  GraduationCap
 } from "lucide-react";
 
 const navigation = [
@@ -87,6 +89,14 @@ const navigation = [
     ],
   },
   {
+    title: "Gurukul",
+    items: [
+      { title: "Study Materials", url: "/dashboard/gurukul/study-materials", icon: BookOpen },
+      { title: "Courses", url: "/dashboard/gurukul/courses", icon: GraduationCap },
+      { title: "Orders", url: "/dashboard/gurukul/orders", icon: Receipt },
+    ],
+  },
+  {
     title: "Reports",
     items: [
       { title: "Reports", url: "/reports", icon: FileText },
@@ -100,8 +110,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const [accountingOpen, setAccountingOpen] = useState(true);
+  const [accountingOpen, setAccountingOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -114,15 +125,48 @@ export default function DashboardLayout({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        router.push("/login");
+        router.push("/auth/login");
         return;
       }
       setUser(user);
+
+      // Get user profile and role
+      const { data: profileData } = await supabase
+        .from("user_profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profileData) {
+        const role = profileData.role as UserRole;
+        setUserRole(role);
+        
+        // Redirect non-admin users from admin routes to my-learning
+        const isAdminRoute = pathname.startsWith("/dashboard") && 
+          !pathname.startsWith("/dashboard/my-learning") &&
+          !pathname.startsWith("/dashboard/profile") &&
+          !pathname.startsWith("/dashboard/settings");
+        
+        if (role !== 'admin' && isAdminRoute) {
+          router.push("/dashboard/my-learning");
+          return;
+        }
+      } else {
+        // No profile, redirect to my-learning
+        if (pathname.startsWith("/dashboard") && 
+          !pathname.startsWith("/dashboard/my-learning") &&
+          !pathname.startsWith("/dashboard/profile") &&
+          !pathname.startsWith("/dashboard/settings")) {
+          router.push("/dashboard/my-learning");
+          return;
+        }
+      }
+
       setLoading(false);
     };
 
     checkUser();
-  }, [router, supabase]);
+  }, [router, supabase, pathname]);
 
   // Auto-open accounting menu when on accounting pages
   useEffect(() => {
@@ -147,7 +191,7 @@ export default function DashboardLayout({
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   if (loading) {
@@ -169,8 +213,9 @@ export default function DashboardLayout({
           </div>
         </SidebarHeader>
         <SidebarContent>
-          {navigation.length > 0 ? (
-            navigation.map((group) => {
+          {userRole === 'admin' ? (
+            navigation.length > 0 ? (
+              navigation.map((group) => {
               const isAccountingGroup = group.isCollapsible;
               const isActive = isAccountingGroup && group.items.some(item => pathname === item.url || pathname.startsWith("/dashboard/accounting") || pathname.startsWith("/dashboard/donations"));
               
@@ -242,6 +287,59 @@ export default function DashboardLayout({
             <div className="px-2 py-4 text-sm text-slate-500">
               Navigation items will appear here
             </div>
+          )
+          ) : (
+            <SidebarGroup>
+              <SidebarGroupLabel>Student Portal</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === "/dashboard/my-learning"}
+                    >
+                      <Link href="/dashboard/my-learning" onClick={handleLinkClick}>
+                        <GraduationCap />
+                        <span>My Learning</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === "/gurukul" || pathname.startsWith("/gurukul/")}
+                    >
+                      <Link href="/gurukul" onClick={handleLinkClick}>
+                        <BookOpen />
+                        <span>Browse Store</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === "/dashboard/profile"}
+                    >
+                      <Link href="/dashboard/profile" onClick={handleLinkClick}>
+                        <User />
+                        <span>Profile</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === "/dashboard/settings"}
+                    >
+                      <Link href="/dashboard/settings" onClick={handleLinkClick}>
+                        <Settings />
+                        <span>Settings</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           )}
         </SidebarContent>
         <SidebarFooter>

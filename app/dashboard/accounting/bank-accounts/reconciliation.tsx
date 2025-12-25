@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { useSearchParams } from "next/navigation"
 
-export default function BankReconciliationPage() {
+function BankReconciliationPageContent() {
     const searchParams = useSearchParams()
     const accountId = searchParams.get("account")
     const supabase = createClient()
@@ -252,6 +252,23 @@ export default function BankReconciliationPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function BankReconciliationPage() {
+    return (
+        <Suspense fallback={
+            <div className="p-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Bank Reconciliation</CardTitle>
+                        <CardDescription>Loading...</CardDescription>
+                    </CardHeader>
+                </Card>
+            </div>
+        }>
+            <BankReconciliationPageContent />
+        </Suspense>
     )
 }
 

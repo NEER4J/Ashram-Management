@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -27,6 +27,8 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +42,25 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/dashboard");
+      
+      // Redirect to returnUrl if provided, otherwise to dashboard based on role
+      if (returnUrl) {
+        router.push(returnUrl)
+      } else {
+        // Check user role to redirect appropriately
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { getUserProfile } = await import("@/lib/auth/role-check")
+          const profile = await getUserProfile(user.id)
+          if (profile?.role === 'admin') {
+            router.push("/dashboard")
+          } else {
+            router.push("/dashboard/my-learning")
+          }
+        } else {
+          router.push("/dashboard/my-learning")
+        }
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {

@@ -24,6 +24,18 @@ export function Header() {
                 color: "#14181f",
               }}
             >
+              <Link href="/gurukul">Store</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="font-bold"
+              style={{
+                backgroundColor: "transparent",
+                borderColor: "#3c0212",
+                color: "#14181f",
+              }}
+            >
               <Link href="/auth/login">Login</Link>
             </Button>
             <Button
