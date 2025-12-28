@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  transpilePackages: ["qrcode.react"],
 };
 
 export default nextConfig;

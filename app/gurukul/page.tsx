@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MaterialCard } from "@/components/gurukul/material-card"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BookOpen, Search, ArrowRight } from "lucide-react"
@@ -53,12 +55,11 @@ export default function GurukulHomePage() {
 
     return (
         <main className="min-h-screen" style={{ backgroundColor: "#fbf9ef" }}>
+            <Header />
             {/* Hero Section */}
             <section className="py-20 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#3c0212" }}>
                 <div className="container mx-auto max-w-6xl text-center">
-                    <div className="mb-6">
-                        <BookOpen className="h-16 w-16 mx-auto mb-4" style={{ color: "#fef9fb" }} />
-                    </div>
+                   
                     <h1 className="font-serif text-5xl md:text-6xl font-medium mb-6" style={{ color: "#fef9fb" }}>
                         Gurukul - Study Materials
                     </h1>
@@ -195,6 +196,7 @@ export default function GurukulHomePage() {
                     </div>
                 </div>
             </section>
+            <Footer />
         </main>
     )
 }

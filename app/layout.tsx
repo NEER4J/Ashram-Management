@@ -10,7 +10,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Ashram Management CRM",
+  title: "Ashram",
   description: "Manage your Ashram operations efficiently",
 };
 

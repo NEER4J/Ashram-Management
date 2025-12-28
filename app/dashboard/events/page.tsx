@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/client"
 import { DataTable } from "@/components/ui/data-table"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react"
+import { Plus, MoreHorizontal, Edit, Trash2, BarChart3, ExternalLink } from "lucide-react"
+import Link from "next/link"
 import {
     Sheet,
     SheetContent,
@@ -35,11 +36,14 @@ import { toast } from "sonner"
 export type TempleEvent = {
     id: string
     name: string
+    slug: string | null
     type: string
     start_date: string
     end_date: string
     status: string
-    budget: number
+    city: string | null
+    state: string | null
+    is_published: boolean
 }
 
 export default function EventsPage() {
@@ -107,21 +111,18 @@ export default function EventsPage() {
             cell: ({ row }) => `${row.original.start_date} to ${row.original.end_date}`
         },
         {
-            accessorKey: "budget",
-            header: "Budget",
-            cell: ({ row }) => {
-                const amount = parseFloat(row.getValue("budget"))
-                const formatted = new Intl.NumberFormat("en-IN", {
-                    style: "currency",
-                    currency: "INR",
-                }).format(amount)
-                return <div className="font-medium">{formatted}</div>
-            },
-        },
-        {
             accessorKey: "status",
             header: "Status",
             cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
+        },
+        {
+            accessorKey: "is_published",
+            header: "Published",
+            cell: ({ row }) => (
+                <div className={row.getValue("is_published") ? "text-green-600 font-semibold" : "text-gray-400"}>
+                    {row.getValue("is_published") ? "Yes" : "No"}
+                </div>
+            ),
         },
         {
             id: "actions",
@@ -137,6 +138,20 @@ export default function EventsPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/dashboard/events/${event.id}/analytics`}>
+                                    <BarChart3 className="mr-2 h-4 w-4" />
+                                    View Analytics
+                                </Link>
+                            </DropdownMenuItem>
+                            {event.slug && (
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/events/${event.slug}`} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="mr-2 h-4 w-4" />
+                                        View Public Page
+                                    </Link>
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem onClick={() => handleEdit(event)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
@@ -186,7 +201,19 @@ export default function EventsPage() {
                         </SheetHeader>
                         <div className="py-6">
                             <EventForm
-                                initialData={editingEvent || undefined}
+                                initialData={editingEvent ? {
+                                    id: editingEvent.id,
+                                    name: editingEvent.name,
+                                    slug: editingEvent.slug || undefined,
+                                    type: editingEvent.type || undefined,
+                                    start_date: editingEvent.start_date,
+                                    end_date: editingEvent.end_date,
+                                    city: editingEvent.city || undefined,
+                                    state: editingEvent.state || undefined,
+                                    description: undefined,
+                                    status: editingEvent.status as any,
+                                    is_published: editingEvent.is_published ?? false,
+                                } : undefined}
                                 onSuccess={() => {
                                     setIsOpen(false)
                                     setEditingEvent(null)

@@ -41,7 +41,7 @@ const features: Feature[] = [
 
 export function FeatureSection() {
   return (
-    <section className="py-16" style={{ backgroundColor: "#fbf9ef" }}>
+    <section className="py-16 hidden" style={{ backgroundColor: "#fbf9ef" }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="font-serif text-4xl font-bold mb-4" style={{ color: "#14181f" }}>

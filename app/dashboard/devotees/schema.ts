@@ -18,6 +18,8 @@ export const devoteeSchema = z.object({
     gotra: z.string().optional(),
     nakshatra: z.string().optional(),
     rashi: z.string().optional(),
+    occupation: z.string().optional(),
+    event_source: z.string().optional(),
     membership_type: z.string().default("General"),
     membership_status: z.string().default("Active"),
 })

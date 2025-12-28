@@ -3,23 +3,26 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createClient } from "@/lib/supabase/client"
-import { EventFormValues, eventSchema } from "./schema"
+import { EventFormValues, eventSchema, generateSlug } from "./schema"
 import { FormWrapper } from "@/components/form-wrapper"
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { INDIAN_STATES, CITIES_BY_STATE } from "@/lib/data/indian-states-cities"
 
 interface EventFormProps {
-    initialData?: Partial<EventFormValues> & { id?: string }
+    initialData?: Partial<EventFormValues> & { id?: string; slug?: string; is_published?: boolean; city?: string; state?: string }
     onSuccess?: () => void
 }
 
 export function EventForm({ initialData, onSuccess }: EventFormProps) {
     const [loading, setLoading] = useState(false)
+    const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
     const router = useRouter()
     const supabase = createClient()
 
@@ -27,18 +30,49 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
         resolver: zodResolver(eventSchema) as any,
         defaultValues: {
             status: initialData?.status || "Planned",
-            budget: initialData?.budget || 0,
             name: initialData?.name || "",
+            slug: initialData?.slug || (initialData?.name ? generateSlug(initialData.name) : ""),
             type: initialData?.type || "",
             start_date: initialData?.start_date || "",
             end_date: initialData?.end_date || "",
+            city: initialData?.city || "",
+            state: initialData?.state || "",
             description: initialData?.description || "",
+            is_published: initialData?.is_published ?? false,
         }
     })
+
+    const eventName = form.watch("name")
+    const currentSlug = form.watch("slug")
+
+    // Auto-generate slug from name when name changes (unless manually edited)
+    useEffect(() => {
+        if (eventName && !slugManuallyEdited && (!currentSlug || !initialData?.slug)) {
+            const generatedSlug = generateSlug(eventName)
+            form.setValue("slug", generatedSlug)
+        }
+    }, [eventName, slugManuallyEdited, currentSlug, form, initialData?.slug])
 
     async function onSubmit(data: EventFormValues) {
         setLoading(true)
         try {
+            // Check slug uniqueness (only for new events or if slug changed)
+            if (!initialData?.id || data.slug !== initialData.slug) {
+                const { data: existing, error: checkError } = await supabase
+                    .from("temple_events")
+                    .select("id")
+                    .eq("slug", data.slug)
+                    .maybeSingle()
+
+                if (checkError) throw checkError
+
+                if (existing && existing.id !== initialData?.id) {
+                    toast.error("This slug is already taken. Please use a different slug.")
+                    setLoading(false)
+                    return
+                }
+            }
+
             const { error } = initialData?.id
                 ? await supabase.from("temple_events").update(data).eq("id", initialData.id)
                 : await supabase.from("temple_events").insert(data)
@@ -69,6 +103,30 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                     <FormItem>
                         <FormLabel>Event Name</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>URL Slug</FormLabel>
+                        <FormControl>
+                            <Input 
+                                {...field} 
+                                onChange={(e) => {
+                                    field.onChange(e)
+                                    setSlugManuallyEdited(true)
+                                }}
+                                placeholder="event-slug-2025"
+                            />
+                        </FormControl>
+                        <FormDescription>
+                            URL-friendly identifier (auto-generated from name, but you can edit it)
+                        </FormDescription>
                         <FormMessage />
                     </FormItem>
                 )}
@@ -149,17 +207,59 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                 />
             </div>
 
-            <FormField
-                control={form.control}
-                name="budget"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Budget (₹)</FormLabel>
-                        <FormControl><Input {...field} type="number" step="0.01" /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="state"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>State</FormLabel>
+                            <Select onValueChange={(value) => {
+                                field.onChange(value)
+                                form.setValue("city", "") // Reset city when state changes
+                            }} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select State" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {INDIAN_STATES.map((state) => (
+                                        <SelectItem key={state.code} value={state.name}>
+                                            {state.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>City</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!form.watch("state")}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={form.watch("state") ? "Select City" : "Select State first"} />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {form.watch("state") && CITIES_BY_STATE[form.watch("state")]?.map((city) => (
+                                        <SelectItem key={city} value={city}>
+                                            {city}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
 
             <FormField
                 control={form.control}
@@ -167,8 +267,31 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Description</FormLabel>
-                        <FormControl><Textarea {...field} /></FormControl>
+                        <FormControl><Textarea {...field} rows={4} /></FormControl>
                         <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <FormField
+                control={form.control}
+                name="is_published"
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel>
+                                Publish Event
+                            </FormLabel>
+                            <FormDescription>
+                                Published events will be visible on the public events page and can accept registrations.
+                            </FormDescription>
+                        </div>
                     </FormItem>
                 )}
             />
