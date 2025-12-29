@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { INDIAN_STATES, CITIES_BY_STATE, OCCUPATIONS } from "@/lib/data/indian-states-cities"
 import { Button } from "@/components/ui/button"
-import { Loader2, MessageCircle, Facebook, Twitter, Link as LinkIcon, Download, Share2 } from "lucide-react"
+import { Loader2, MessageCircle, Facebook, Twitter, Link as LinkIcon, Download, Share2, Instagram, Youtube } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Footer } from "@/components/footer"
@@ -40,6 +40,7 @@ export default function EventDetailPage() {
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [isMobile, setIsMobile] = useState(false)
     const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false)
+    const [showShareDialog, setShowShareDialog] = useState(false)
     const [selectedMessage, setSelectedMessage] = useState<"english" | "hindi">("english")
     const qrCodeRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
@@ -155,14 +156,14 @@ export default function EventDetailPage() {
     }
 
     const handleWhatsAppClick = () => {
-        const phoneNumber = "917470915225"
+        const phoneNumber = "918988606060"
         const message = encodeURIComponent(whatsappMessages[selectedMessage])
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
         window.open(whatsappUrl, "_blank")
     }
 
     const openWhatsAppWithMessage = () => {
-        const phoneNumber = "917470915225"
+        const phoneNumber = "918988606060"
         const message = encodeURIComponent(whatsappMessages[selectedMessage])
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
         window.open(whatsappUrl, "_blank")
@@ -317,7 +318,7 @@ export default function EventDetailPage() {
                             {event.name}
                         </h1>
                         <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-10 md:mb-12 max-w-4xl mx-auto leading-relaxed font-light" style={{ color: "#fef9fb", opacity: 0.95 }}>
-                            {event.description || "Join us for a divine spiritual experience"}
+                            {event.description || "An enlightening spiritual experience with Sadguru Shri Riteshwar"}
                         </p>
 
                         {/* Banner Image - Responsive */}
@@ -344,64 +345,69 @@ export default function EventDetailPage() {
                             </div>
                         </div>
 
-                        {/* Share Buttons */}
-                        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4" >
+                        {/* Share and Social Links */}
+                        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+                            {/* Share Event Button */}
                             <Button
-                                onClick={() => handleShare("whatsapp")}
+                                onClick={() => setShowShareDialog(true)}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                className="text-lg font-semibold px-6 md:px-10 !py-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
                                 style={{
                                     backgroundColor: "transparent",
                                     color: "#fef9fb",
                                     borderColor: "#fef9fb"
                                 }}
                             >
-                                <MessageCircle className="mr-2 h-5 w-5" />
-                                WhatsApp
+                                <Share2 className="mr-2 h-5 w-5" />
+                                Share Event
                             </Button>
-                            <Button
-                                onClick={() => handleShare("facebook")}
-                                variant="outline"
-                                size="lg"
-                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                                style={{
+                            
+                            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4"> 
+                            {/* Social Media Buttons */}
+                            <a 
+                                href="https://www.facebook.com/riteshwarji.dasanudas.9/" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                style={{ 
                                     backgroundColor: "transparent",
                                     color: "#fef9fb",
                                     borderColor: "#fef9fb"
                                 }}
+                                aria-label="Facebook"
                             >
-                                <Facebook className="mr-2 h-5 w-5" />
-                                Facebook
-                            </Button>
-                            <Button
-                                onClick={() => handleShare("twitter")}
-                                variant="outline"
-                                size="lg"
-                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                                style={{
+                                <Facebook className="w-5 h-5" />
+                            </a>
+                            <a 
+                                href="https://www.instagram.com/sadgurushririteshwar/" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                style={{ 
                                     backgroundColor: "transparent",
                                     color: "#fef9fb",
                                     borderColor: "#fef9fb"
                                 }}
+                                aria-label="Instagram"
                             >
-                                <Twitter className="mr-2 h-5 w-5" />
-                                Twitter
-                            </Button>
-                            <Button
-                                onClick={() => handleShare("copy")}
-                                variant="outline"
-                                size="lg"
-                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                                style={{
+                                <Instagram className="w-5 h-5" />
+                            </a>
+                            <a 
+                                href="https://www.youtube.com/channel/UCMxl7IWKuTNQIYnmBksXfUA" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                style={{ 
                                     backgroundColor: "transparent",
                                     color: "#fef9fb",
                                     borderColor: "#fef9fb"
                                 }}
+                                aria-label="YouTube"
                             >
-                                <LinkIcon className="mr-2 h-5 w-5" />
-                                Copy Link
-                            </Button>
+                                <Youtube className="w-5 h-5" />
+                            </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -680,7 +686,7 @@ export default function EventDetailPage() {
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-lg mb-1" style={{ color: "#3c0212" }}>Contact</h3>
-                                        <p className="text-gray-700 text-base">+91 7470915225</p>
+                                        <p className="text-gray-700 text-base">+91 8988606060</p>
                                     </div>
                                 </div>
                             </div>
@@ -836,6 +842,98 @@ export default function EventDetailPage() {
                             Maybe Later
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Share Dialog */}
+            <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-serif font-bold text-center" style={{ color: "#3c0212" }}>
+                            Share This Event
+                        </DialogTitle>
+                        <DialogDescription className="text-center text-base pt-2">
+                            Spread the word about this divine event
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-6 space-y-6">
+                        {/* Share Options */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* WhatsApp Share */}
+                            <button
+                                onClick={() => {
+                                    handleShare("whatsapp")
+                                    setShowShareDialog(false)
+                                }}
+                                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                style={{ 
+                                    borderColor: "#e5e5e5",
+                                    backgroundColor: "#f9f9f9"
+                                }}
+                            >
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#25D366" }}>
+                                    <MessageCircle className="w-7 h-7 text-white" />
+                                </div>
+                                <span className="text-sm font-semibold text-gray-700">WhatsApp</span>
+                            </button>
+
+                            {/* Facebook Share */}
+                            <button
+                                onClick={() => {
+                                    handleShare("facebook")
+                                    setShowShareDialog(false)
+                                }}
+                                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                style={{ 
+                                    borderColor: "#e5e5e5",
+                                    backgroundColor: "#f9f9f9"
+                                }}
+                            >
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#1877F2" }}>
+                                    <Facebook className="w-7 h-7 text-white" />
+                                </div>
+                                <span className="text-sm font-semibold text-gray-700">Facebook</span>
+                            </button>
+
+                            {/* Twitter Share */}
+                            <button
+                                onClick={() => {
+                                    handleShare("twitter")
+                                    setShowShareDialog(false)
+                                }}
+                                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                style={{ 
+                                    borderColor: "#e5e5e5",
+                                    backgroundColor: "#f9f9f9"
+                                }}
+                            >
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#1DA1F2" }}>
+                                    <Twitter className="w-7 h-7 text-white" />
+                                </div>
+                                <span className="text-sm font-semibold text-gray-700">Twitter</span>
+                            </button>
+
+                            {/* Copy Link */}
+                            <button
+                                onClick={() => {
+                                    handleShare("copy")
+                                    setShowShareDialog(false)
+                                }}
+                                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                style={{ 
+                                    borderColor: "#e5e5e5",
+                                    backgroundColor: "#f9f9f9"
+                                }}
+                            >
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#3c0212" }}>
+                                    <LinkIcon className="w-7 h-7 text-white" />
+                                </div>
+                                <span className="text-sm font-semibold text-gray-700">Copy Link</span>
+                            </button>
+                        </div>
+
+                       
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
