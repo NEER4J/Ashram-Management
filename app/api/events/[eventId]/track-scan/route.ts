@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server"
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { eventId: string } }
+    { params }: { params: Promise<{ eventId: string }> | { eventId: string } }
 ) {
     try {
-        const { eventId } = params
+        // Handle both Next.js 14 and 15 params format
+        const resolvedParams = params instanceof Promise ? await params : params
+        const { eventId } = resolvedParams
         const body = await request.json()
         const { session_id, user_agent } = body
 
@@ -18,11 +20,13 @@ export async function POST(
         }
 
         const supabase = await createClient()
+        // Use service role client for inserting analytics (bypasses RLS, ensures reliability)
+        const supabaseAdmin = createServiceRoleClient()
 
         // Verify event exists and is published
         const { data: event, error: eventError } = await supabase
             .from("temple_events")
-            .select("id, is_published")
+            .select("id, name, is_published")
             .eq("id", eventId)
             .single()
 
@@ -33,11 +37,12 @@ export async function POST(
             )
         }
 
-        // Insert QR scan record
-        const { error } = await supabase
+        // Insert QR scan record using admin client to ensure it always works
+        const { error } = await supabaseAdmin
             .from("event_registration_analytics")
             .insert({
                 event_id: eventId,
+                event_name: event.name, // Include event name for backwards compatibility
                 session_id: session_id,
                 user_agent: user_agent || null,
                 ip_address: request.headers.get("x-forwarded-for") || 

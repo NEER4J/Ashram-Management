@@ -43,6 +43,7 @@ export default function EventDetailPage() {
     const [showShareDialog, setShowShareDialog] = useState(false)
     const [selectedMessage, setSelectedMessage] = useState<"english" | "hindi">("english")
     const qrCodeRef = useRef<HTMLDivElement>(null)
+    const trackingInProgress = useRef<boolean>(false)
     const supabase = createClient()
 
     // WhatsApp message options
@@ -125,9 +126,6 @@ export default function EventDetailPage() {
         // Detect mobile device
         const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
         setIsMobile(mobile)
-
-        // Track QR scan (after event is loaded)
-        // We'll do this in fetchEvent after event is loaded
     }
 
     useEffect(() => {
@@ -137,10 +135,41 @@ export default function EventDetailPage() {
     }, [event?.id, sessionId])
 
     const trackQRScan = async () => {
-        if (!event?.id || !sessionId) return
+        if (!event?.id || !sessionId) {
+            console.warn("⚠️ QR Tracking: Missing event ID or session ID", { eventId: event?.id, sessionId })
+            return
+        }
+
+        // Prevent multiple simultaneous tracking calls
+        if (trackingInProgress.current) {
+            console.log("⏭️ QR Tracking already in progress, skipping duplicate call")
+            return
+        }
+
+        // Check if we've already tracked this scan for this session/event combination
+        const trackingKey = `qr_tracked_${event.id}_${sessionId}`
+        const alreadyTracked = localStorage.getItem(trackingKey)
+        
+        if (alreadyTracked === "true") {
+            console.log("⏭️ QR Scan already tracked for this session, skipping duplicate", {
+                eventId: event.id,
+                sessionId: sessionId
+            })
+            return
+        }
+
+        // Mark as in progress
+        trackingInProgress.current = true
+
+        console.log("🔍 Starting QR scan tracking...", {
+            eventId: event.id,
+            eventName: event.name,
+            sessionId: sessionId,
+            url: window.location.href
+        })
 
         try {
-            await fetch(`/api/events/${event.id}/track-scan`, {
+            const response = await fetch(`/api/events/${event.id}/track-scan`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -150,8 +179,38 @@ export default function EventDetailPage() {
                     user_agent: navigator.userAgent,
                 }),
             })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                console.error("❌ QR Tracking Failed:", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: data.error,
+                    eventId: event.id,
+                    sessionId: sessionId
+                })
+                // Don't mark as tracked if it failed, so we can retry
+            } else {
+                // Mark as tracked in localStorage to prevent duplicates
+                localStorage.setItem(trackingKey, "true")
+                console.log("✅ QR Scan tracked successfully!", {
+                    eventId: event.id,
+                    sessionId: data.session_id || sessionId,
+                    timestamp: new Date().toISOString()
+                })
+            }
         } catch (error) {
-            console.error("Failed to track QR scan:", error)
+            console.error("❌ QR Tracking Network Error:", {
+                error: error instanceof Error ? error.message : String(error),
+                eventId: event.id,
+                sessionId: sessionId,
+                stack: error instanceof Error ? error.stack : undefined
+            })
+            // Don't mark as tracked if it failed, so we can retry
+        } finally {
+            // Reset the in-progress flag
+            trackingInProgress.current = false
         }
     }
 
@@ -232,9 +291,40 @@ export default function EventDetailPage() {
     if (loadingEvent) {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#fbf9ef" }}>
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3c0212] mx-auto mb-4"></div>
-                    <p style={{ color: "#3c0212" }}>Loading event...</p>
+                <div className="relative">
+                    {/* Rotating Sun Animation */}
+                    <svg
+                        className="animate-spin"
+                        style={{ animationDuration: "3s" }}
+                        width="100"
+                        height="100"
+                        viewBox="0 0 100 100"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        {/* Sun rays - 8 rays for smooth rotation */}
+                        <g transform="translate(50, 50)">
+                            {/* Top */}
+                            <line x1="0" y1="-45" x2="0" y2="-30" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                            {/* Bottom */}
+                            <line x1="0" y1="45" x2="0" y2="30" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                            {/* Left */}
+                            <line x1="-45" y1="0" x2="-30" y2="0" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                            {/* Right */}
+                            <line x1="45" y1="0" x2="30" y2="0" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                            {/* Top Right */}
+                            <line x1="31.82" y1="-31.82" x2="21.21" y2="-21.21" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                            {/* Bottom Left */}
+                            <line x1="-31.82" y1="31.82" x2="-21.21" y2="21.21" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                            {/* Top Left */}
+                            <line x1="-31.82" y1="-31.82" x2="-21.21" y2="-21.21" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                            {/* Bottom Right */}
+                            <line x1="31.82" y1="31.82" x2="21.21" y2="21.21" stroke="#3c0212" strokeWidth="4" strokeLinecap="round" />
+                        </g>
+                        {/* Sun center circle with gradient effect */}
+                        <circle cx="50" cy="50" r="22" fill="#fbbf24" stroke="#3c0212" strokeWidth="2.5" />
+                        <circle cx="50" cy="50" r="15" fill="#fef9fb" />
+                    </svg>
                 </div>
             </div>
         )

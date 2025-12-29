@@ -28,6 +28,15 @@ type RecentRegistration = {
     created_at: string
 }
 
+type RecentScan = {
+    id: string
+    session_id: string
+    qr_scan_at: string
+    form_submitted_at: string | null
+    user_agent: string | null
+    ip_address: string | null
+}
+
 type EventDetails = {
     id: string
     name: string
@@ -44,6 +53,7 @@ export default function EventAnalyticsPage() {
     })
     const [event, setEvent] = useState<EventDetails | null>(null)
     const [recentRegistrations, setRecentRegistrations] = useState<RecentRegistration[]>([])
+    const [recentScans, setRecentScans] = useState<RecentScan[]>([])
     const [loading, setLoading] = useState(true)
     const qrCodeRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
@@ -59,6 +69,7 @@ export default function EventAnalyticsPage() {
             fetchEvent()
             fetchAnalytics()
             fetchRecentRegistrations()
+            fetchRecentScans()
         }
     }, [eventId])
 
@@ -99,12 +110,12 @@ export default function EventAnalyticsPage() {
 
             const totalScans = scanCount || 0
             const totalSubmissions = submitCount || 0
-            const conversionRate = totalScans > 0 ? ((totalSubmissions / totalScans) * 100).toFixed(2) : 0
+            const conversionRate = totalScans > 0 ? ((totalSubmissions / totalScans) * 100) : 0
 
             setAnalytics({
                 total_scans: totalScans,
                 total_submissions: totalSubmissions,
-                conversion_rate: parseFloat(conversionRate),
+                conversion_rate: typeof conversionRate === 'number' ? conversionRate : parseFloat(conversionRate),
             })
         } catch (error) {
             console.error("Error fetching analytics:", error)
@@ -131,11 +142,35 @@ export default function EventAnalyticsPage() {
         }
     }
 
+    const fetchRecentScans = async () => {
+        if (!eventId) return
+        try {
+            const { data, error } = await supabase
+                .from("event_registration_analytics")
+                .select("id, session_id, qr_scan_at, form_submitted_at, user_agent, ip_address")
+                .eq("event_id", eventId)
+                .order("qr_scan_at", { ascending: false })
+                .limit(20)
+
+            if (error) throw error
+            setRecentScans(data || [])
+        } catch (error) {
+            console.error("Error fetching recent scans:", error)
+            // Don't show toast for this, just log it
+        }
+    }
+
     useEffect(() => {
         if (event?.slug) {
             fetchRecentRegistrations()
         }
     }, [event?.slug])
+
+    useEffect(() => {
+        if (eventId) {
+            fetchRecentScans()
+        }
+    }, [eventId])
 
     const downloadQRCode = () => {
         if (!qrCodeRef.current || !formUrl) return
@@ -294,6 +329,61 @@ export default function EventAnalyticsPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Recent QR Scans */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent QR Scans</CardTitle>
+                    <CardDescription>
+                        Latest QR code scans for this event (for debugging tracking)
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {recentScans.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <QrCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>No QR scans recorded yet.</p>
+                            <p className="text-sm mt-2">Scan the QR code from your phone to test tracking.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {recentScans.map((scan) => (
+                                <div
+                                    key={scan.id}
+                                    className="flex items-center justify-between p-4 border rounded-lg"
+                                >
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className={`w-2 h-2 rounded-full ${
+                                                scan.form_submitted_at ? 'bg-green-500' : 'bg-blue-500'
+                                            }`} />
+                                            <span className="text-sm font-medium">
+                                                {scan.form_submitted_at ? 'Converted' : 'Scanned Only'}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            Session: {scan.session_id.substring(0, 8)}...
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Scanned: {new Date(scan.qr_scan_at).toLocaleString()}
+                                        </p>
+                                        {scan.form_submitted_at && (
+                                            <p className="text-xs text-green-600">
+                                                Submitted: {new Date(scan.form_submitted_at).toLocaleString()}
+                                            </p>
+                                        )}
+                                        {scan.user_agent && (
+                                            <p className="text-xs text-muted-foreground mt-1 truncate max-w-md">
+                                                Device: {scan.user_agent.includes('Mobile') ? '📱 Mobile' : '💻 Desktop'}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Recent Registrations */}
             <Card>
