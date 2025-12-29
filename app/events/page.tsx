@@ -50,10 +50,10 @@ export default function EventsListingPage() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return date.toLocaleDateString("en-US", { 
-            year: "numeric", 
-            month: "long", 
-            day: "numeric" 
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
         })
     }
 
@@ -69,79 +69,100 @@ export default function EventsListingPage() {
     }
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: "#fbf9ef" }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#fbf9ef" }}>
             <Header />
             {/* Hero Section */}
-            <section className="py-20 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#3c0212" }}>
-                <div className="container mx-auto max-w-6xl text-center">
-                    <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6" style={{ color: "#fef9fb" }}>
-                        Upcoming Events
-                    </h1>
-                    <p className="text-xl md:text-2xl max-w-3xl mx-auto" style={{ color: "#fef9fb", opacity: 0.9 }}>
-                        Join us for divine spiritual experiences and celebrations
-                    </p>
+            <section className="relative py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundColor: "#3c0212" }}>
+                <div className="absolute inset-0 bg-gradient-to-br from-[#3c0212] via-[#4a0318] to-[#3c0212] opacity-100"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                <div className="container mx-auto max-w-6xl text-center relative z-10">
+                    <div className="opacity-0 animate-fade-in">
+                        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight tracking-tight" style={{ color: "#fef9fb" }}>
+                            Upcoming Events
+                        </h1>
+                        <p className="text-lg sm:text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed font-light" style={{ color: "#fef9fb", opacity: 0.95 }}>
+                            Join us for divine spiritual experiences and celebrations
+                        </p>
+                    </div>
                 </div>
             </section>
 
             {/* Events Listing */}
-            <section className="py-16 px-4 sm:px-6 lg:px-8">
-                <div className="container mx-auto max-w-6xl">
+            <section className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 flex-1">
+                <div className="container mx-auto max-w-7xl">
                     {events.length === 0 ? (
-                        <Card className="p-12 text-center" style={{ backgroundColor: "#fef9fb" }}>
-                            <p className="text-xl text-gray-600">No upcoming events at this time. Please check back soon!</p>
+                        <Card className="p-12 md:p-16 text-center rounded-2xl shadow-lg" style={{ backgroundColor: "#fef9fb" }}>
+                            <p className="text-xl md:text-2xl text-gray-600">No upcoming events at this time. Please check back soon!</p>
                         </Card>
                     ) : (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {events.map((event) => (
-                                <Card key={event.id} className="flex flex-col" style={{ backgroundColor: "#fef9fb" }}>
-                                    <CardHeader>
-                                        <CardTitle className="font-serif text-2xl font-bold mb-2" style={{ color: "#3c0212" }}>
-                                            {event.name}
-                                        </CardTitle>
-                                        {event.type && (
-                                            <Badge 
-                                                variant="secondary" 
-                                                className="w-fit mb-2 text-xs font-medium"
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                            {events.map((event, index) => (
+                                <Link 
+                                    key={event.id} 
+                                    href={`/events/${event.slug}`}
+                                    className="opacity-0 animate-fade-in-delay"
+                                    style={{ animationDelay: `${index * 100}ms` }}
+                                >
+                                    <Card className="flex flex-col h-full rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-2 hover:border-[#3c0212]/30 group" 
+                                        style={{ 
+                                            backgroundColor: "#fef9fb", 
+                                            borderColor: "#e5e5e5",
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                        }}
+                                    >
+                                        <CardHeader className="pb-4">
+                                            <div className="flex items-start justify-between gap-3 mb-3">
+                                                <CardTitle className="font-serif text-xl md:text-2xl font-bold leading-tight flex-1 group-hover:text-[#3c0212]/90 transition-colors" style={{ color: "#3c0212" }}>
+                                                    {event.name}
+                                                </CardTitle>
+                                                {event.type && (
+                                                    <Badge
+                                                        className="w-fit text-xs font-semibold rounded-full px-3 py-1.5 flex-shrink-0 shadow-sm"
+                                                        style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
+                                                    >
+                                                        {event.type}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <CardDescription className="flex items-center gap-2 text-sm md:text-base">
+                                                    <div className="p-1.5 rounded-lg bg-[#3c0212]/10 group-hover:bg-[#3c0212]/20 transition-colors">
+                                                        <Calendar className="h-4 w-4 md:h-5 md:w-5" style={{ color: "#3c0212" }} />
+                                                    </div>
+                                                    <span className="font-medium text-gray-700">
+                                                        {formatDate(event.start_date)}
+                                                        {event.start_date !== event.end_date && ` - ${formatDate(event.end_date)}`}
+                                                    </span>
+                                                </CardDescription>
+                                                {(event.city || event.state) && (
+                                                    <CardDescription className="flex items-center gap-2 text-sm md:text-base">
+                                                        <div className="p-1.5 rounded-lg bg-[#3c0212]/10 group-hover:bg-[#3c0212]/20 transition-colors">
+                                                            <MapPin className="h-4 w-4 md:h-5 md:w-5" style={{ color: "#3c0212" }} />
+                                                        </div>
+                                                        <span className="text-gray-700">{[event.city, event.state].filter(Boolean).join(", ")}</span>
+                                                    </CardDescription>
+                                                )}
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="flex-1 flex flex-col pt-0">
+                                            {event.description && (
+                                                <p className="text-sm md:text-base text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+                                                    {event.description}
+                                                </p>
+                                            )}
+                                            <Button
+                                                asChild
+                                                className="mt-auto w-full rounded-xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
                                                 style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
                                             >
-                                                {event.type}
-                                            </Badge>
-                                        )}
-                                        <CardDescription className="flex items-center gap-2 mt-2">
-                                            <Calendar className="h-4 w-4" />
-                                            <span>{formatDate(event.start_date)}</span>
-                                            {event.start_date !== event.end_date && (
-                                                <>
-                                                    <span>to</span>
-                                                    <span>{formatDate(event.end_date)}</span>
-                                                </>
-                                            )}
-                                        </CardDescription>
-                                        {(event.city || event.state) && (
-                                            <CardDescription className="flex items-center gap-2 mt-1">
-                                                <MapPin className="h-4 w-4" />
-                                                <span>{[event.city, event.state].filter(Boolean).join(", ")}</span>
-                                            </CardDescription>
-                                        )}
-                                    </CardHeader>
-                                    <CardContent className="flex-1 flex flex-col">
-                                        {event.description && (
-                                            <p className="text-gray-600 mb-4 line-clamp-3">
-                                                {event.description}
-                                            </p>
-                                        )}
-                                        <Button
-                                            asChild
-                                            className="mt-auto w-full"
-                                            style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
-                                        >
-                                            <Link href={`/events/${event.slug}`}>
-                                                Register Now
-                                                <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                    </CardContent>
-                                </Card>
+                                                <Link href={`/events/${event.slug}`}>
+                                                    Register Now
+                                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
                             ))}
                         </div>
                     )}

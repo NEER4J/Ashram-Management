@@ -16,6 +16,7 @@ import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { QRCodeSVG } from "qrcode.react"
 
 type EventDetails = {
@@ -38,6 +39,7 @@ export default function EventDetailPage() {
     const [loadingEvent, setLoadingEvent] = useState(true)
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [isMobile, setIsMobile] = useState(false)
+    const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false)
     const qrCodeRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
 
@@ -147,6 +149,13 @@ export default function EventDetailPage() {
         window.open(whatsappUrl, "_blank")
     }
 
+    const openWhatsAppWithMessage = () => {
+        const phoneNumber = "917470915225"
+        const message = encodeURIComponent("send a message gurudev to get blessings")
+        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
+        window.open(whatsappUrl, "_blank")
+    }
+
     const handleShare = (platform: string) => {
         if (!event) return
         const url = window.location.href
@@ -194,6 +203,11 @@ export default function EventDetailPage() {
 
             toast.success("Registration successful! Thank you for registering.")
             form.reset()
+            
+            // Show WhatsApp dialog after a short delay
+            setTimeout(() => {
+                setShowWhatsAppDialog(true)
+            }, 500)
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "An error occurred while submitting")
         } finally {
@@ -225,10 +239,10 @@ export default function EventDetailPage() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return date.toLocaleDateString("en-US", { 
-            year: "numeric", 
-            month: "long", 
-            day: "numeric" 
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
         })
     }
 
@@ -264,76 +278,116 @@ export default function EventDetailPage() {
     }
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: "#fbf9ef" }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#fbf9ef" }}>
             <Header />
+            
             {/* Hero Section */}
-            <section className="relative py-20 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#3c0212" }}>
-                <div className="container mx-auto max-w-6xl">
-                    <div className="text-center mb-12">
-                        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6" style={{ color: "#fef9fb" }}>
-                            {event.name}
-                        </h1>
+            <section className="relative py-24 md:py-32 lg:py-40 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundColor: "#3c0212" }}>
+                <div className="absolute inset-0 bg-gradient-to-br from-[#3c0212] via-[#4a0318] to-[#3c0212] opacity-100"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                
+                {/* Decorative Pattern */}
+                <div className="absolute inset-0 opacity-5">
+                    <div className="absolute inset-0" style={{
+                        backgroundImage: `radial-gradient(circle at 2px 2px, #fef9fb 1px, transparent 0)`,
+                        backgroundSize: '40px 40px'
+                    }}></div>
+                </div>
+
+                <div className="container mx-auto max-w-7xl relative z-10">
+                    <div className="text-center mb-12 opacity-0 animate-fade-in">
                         {event.type && (
-                            <div className="inline-block px-4 py-2 rounded-full text-lg font-semibold mb-4" 
-                                 style={{ backgroundColor: "#fef9fb", color: "#3c0212" }}>
+                            <div className="inline-block px-4 py-2 rounded-full text-sm md:text-base font-semibold mb-6 shadow-lg"
+                                style={{ backgroundColor: "#fef9fb", color: "#3c0212" }}>
                                 {event.type}
                             </div>
                         )}
-                        <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style={{ color: "#fef9fb", opacity: 0.9 }}>
+                        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight" style={{ color: "#fef9fb" }}>
+                            {event.name}
+                        </h1>
+                        <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-10 md:mb-12 max-w-4xl mx-auto leading-relaxed font-light" style={{ color: "#fef9fb", opacity: 0.95 }}>
                             {event.description || "Join us for a divine spiritual experience"}
                         </p>
-                        
+
+                        {/* Key Info Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto mb-10 md:mb-12">
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/20">
+                                <Calendar className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-3" style={{ color: "#fef9fb" }} />
+                                <h3 className="font-semibold text-sm md:text-base mb-2" style={{ color: "#fef9fb" }}>Event Date</h3>
+                                <p className="text-xs md:text-sm font-light" style={{ color: "#fef9fb", opacity: 0.9 }}>
+                                    {formatDate(event.start_date)}
+                                    {event.start_date !== event.end_date && ` - ${formatDate(event.end_date)}`}
+                                </p>
+                            </div>
+                            {(event.city || event.state) && (
+                                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/20">
+                                    <MapPin className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-3" style={{ color: "#fef9fb" }} />
+                                    <h3 className="font-semibold text-sm md:text-base mb-2" style={{ color: "#fef9fb" }}>Location</h3>
+                                    <p className="text-xs md:text-sm font-light" style={{ color: "#fef9fb", opacity: 0.9 }}>
+                                        {[event.city, event.state].filter(Boolean).join(", ")}
+                                    </p>
+                                </div>
+                            )}
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/20 sm:col-span-2 lg:col-span-1">
+                                <Users className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-3" style={{ color: "#fef9fb" }} />
+                                <h3 className="font-semibold text-sm md:text-base mb-2" style={{ color: "#fef9fb" }}>Join Us</h3>
+                                <p className="text-xs md:text-sm font-light" style={{ color: "#fef9fb", opacity: 0.9 }}>
+                                    Register now to secure your spot
+                                </p>
+                            </div>
+                        </div>
+
                         {/* Share Buttons */}
-                        <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+                        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
                             <Button
                                 onClick={() => handleShare("whatsapp")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold"
-                                style={{ 
-                                    backgroundColor: "#25D366", 
+                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                style={{
+                                    backgroundColor: "#25D366",
                                     color: "white",
                                     borderColor: "#25D366"
                                 }}
                             >
                                 <MessageCircle className="mr-2 h-5 w-5" />
-                                Share on WhatsApp
+                                WhatsApp
                             </Button>
                             <Button
                                 onClick={() => handleShare("facebook")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold"
-                                style={{ 
-                                    backgroundColor: "#1877F2", 
+                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                style={{
+                                    backgroundColor: "#1877F2",
                                     color: "white",
                                     borderColor: "#1877F2"
                                 }}
                             >
                                 <Facebook className="mr-2 h-5 w-5" />
-                                Share on Facebook
+                                Facebook
                             </Button>
                             <Button
                                 onClick={() => handleShare("twitter")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold"
-                                style={{ 
-                                    backgroundColor: "#1DA1F2", 
+                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                style={{
+                                    backgroundColor: "#1DA1F2",
                                     color: "white",
                                     borderColor: "#1DA1F2"
                                 }}
                             >
                                 <Twitter className="mr-2 h-5 w-5" />
-                                Share on Twitter
+                                Twitter
                             </Button>
                             <Button
                                 onClick={() => handleShare("copy")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold"
-                                style={{ 
-                                    backgroundColor: "transparent", 
+                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl backdrop-blur-sm"
+                                style={{
+                                    backgroundColor: "transparent",
                                     color: "#fef9fb",
                                     borderColor: "#fef9fb"
                                 }}
@@ -346,103 +400,42 @@ export default function EventDetailPage() {
                 </div>
             </section>
 
-            {/* Event Details Section */}
-            <section className="py-16 px-4 sm:px-6 lg:px-8">
-                <div className="container mx-auto max-w-6xl">
-                    <div className="grid md:grid-cols-3 gap-6 mb-12">
-                        <Card className="text-center p-6" style={{ backgroundColor: "#fef9fb" }}>
-                            <Calendar className="h-12 w-12 mx-auto mb-4" style={{ color: "#3c0212" }} />
-                            <h3 className="font-serif text-xl font-bold mb-2" style={{ color: "#3c0212" }}>Date</h3>
-                            <p className="text-gray-600">
-                                {formatDate(event.start_date)}
-                                {event.start_date !== event.end_date && ` to ${formatDate(event.end_date)}`}
-                            </p>
-                        </Card>
-                        {(event.city || event.state) && (
-                            <Card className="text-center p-6" style={{ backgroundColor: "#fef9fb" }}>
-                                <MapPin className="h-12 w-12 mx-auto mb-4" style={{ color: "#3c0212" }} />
-                                <h3 className="font-serif text-xl font-bold mb-2" style={{ color: "#3c0212" }}>Location</h3>
-                                <p className="text-gray-600">{[event.city, event.state].filter(Boolean).join(", ")}</p>
-                            </Card>
-                        )}
-                        <Card className="text-center p-6" style={{ backgroundColor: "#fef9fb" }}>
-                            <Users className="h-12 w-12 mx-auto mb-4" style={{ color: "#3c0212" }} />
-                            <h3 className="font-serif text-xl font-bold mb-2" style={{ color: "#3c0212" }}>Join Us</h3>
-                            <p className="text-gray-600">Register below to participate</p>
-                        </Card>
-                    </div>
-
-                    {event.description && (
-                        <Card className="p-8 mb-12" style={{ backgroundColor: "#fef9fb" }}>
-                            <h2 className="font-serif text-3xl font-bold mb-4 text-center" style={{ color: "#3c0212" }}>
-                                About the Event
-                            </h2>
-                            <p className="text-lg text-gray-700 text-center max-w-3xl mx-auto leading-relaxed">
-                                {event.description}
-                            </p>
-                        </Card>
-                    )}
-
-                    {/* QR Code Section */}
-                    <Card className="p-8" style={{ backgroundColor: "#fef9fb" }}>
-                        <div className="text-center mb-6">
-                            <h2 className="font-serif text-3xl font-bold mb-2" style={{ color: "#3c0212" }}>
-                                Share This Event
-                            </h2>
-                            <p className="text-gray-600">
-                                Scan the QR code to share this event or download it to print
-                            </p>
-                        </div>
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="flex justify-center p-6 bg-white rounded-lg shadow-sm" ref={qrCodeRef}>
-                                    {eventUrl && (
-                                        <QRCodeSVG
-                                            value={eventUrl}
-                                            size={256}
-                                            level="H"
-                                            includeMargin={true}
-                                        />
-                                    )}
-                                </div>
-                                <div className="flex flex-col sm:flex-row gap-3">
-                                    <Button
-                                        onClick={downloadQRCode}
-                                        variant="outline"
-                                        className="font-semibold"
-                                        style={{ borderColor: "#3c0212", color: "#3c0212" }}
-                                    >
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Download QR Code
-                                    </Button>
-                                    <Button
-                                        onClick={() => handleShare("copy")}
-                                        variant="outline"
-                                        className="font-semibold"
-                                        style={{ borderColor: "#3c0212", color: "#3c0212" }}
-                                    >
-                                        <Share2 className="mr-2 h-4 w-4" />
-                                        Copy Event Link
-                                    </Button>
-                                </div>
+            {/* About Event Section */}
+            {event.description && (
+                <section className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
+                    <div className="container mx-auto max-w-5xl">
+                        <div className="opacity-0 animate-fade-in-delay" style={{ animationDelay: '200ms' }}>
+                            <div className="text-center mb-10 md:mb-12">
+                                <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-4 tracking-tight" style={{ color: "#3c0212" }}>
+                                    About the Event
+                                </h2>
+                                <div className="w-24 h-1 mx-auto mb-8" style={{ backgroundColor: "#3c0212" }}></div>
                             </div>
+                            <Card className="p-8 md:p-12 rounded-2xl shadow-xl border-2" style={{ backgroundColor: "#fef9fb", borderColor: "#e5e5e5" }}>
+                                <p className="text-base md:text-lg lg:text-xl text-gray-700 leading-relaxed text-center max-w-4xl mx-auto">
+                                    {event.description}
+                                </p>
+                            </Card>
                         </div>
-                    </Card>
-                </div>
-            </section>
+                    </div>
+                </section>
+            )}
 
-            {/* Registration Form Section */}
-            <section className="py-16 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#fbf9ef" }}>
-                <div className="container mx-auto max-w-2xl">
-                    <Card className="p-8 md:p-12" style={{ backgroundColor: "#fef9fb", boxShadow: "0 10px 40px rgba(0,0,0,0.1)" }}>
-                        <div className="text-center mb-8">
-                            <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4" style={{ color: "#3c0212" }}>
-                                Register for the Event
+            {/* Registration Form Section - Prominent CTA */}
+            <section className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#fef9fb" }}>
+                <div className="container mx-auto max-w-4xl">
+                    <div className="opacity-0 animate-fade-in-delay" style={{ animationDelay: '400ms' }}>
+                        <div className="text-center mb-10 md:mb-12">
+                            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 tracking-tight" style={{ color: "#3c0212" }}>
+                                Register Now
                             </h2>
-                            <p className="text-lg text-gray-600">
-                                Fill in your details to register and secure your spot
+                            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+                                Fill in your details to register and secure your spot at this divine event
                             </p>
+                            <div className="w-24 h-1 mx-auto mt-6" style={{ backgroundColor: "#3c0212" }}></div>
                         </div>
+
+                        <Card className="p-8 md:p-12 lg:p-16 rounded-2xl shadow-2xl border-2" style={{ backgroundColor: "#fef9fb", borderColor: "#e5e5e5" }}>
 
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -602,7 +595,7 @@ export default function EventDetailPage() {
                                     <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full h-14 text-lg font-bold"
+                                        className="w-full h-14 md:h-16 text-lg md:text-xl font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl shadow-lg"
                                         style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
                                     >
                                         {loading ? (
@@ -617,21 +610,107 @@ export default function EventDetailPage() {
                                 </div>
                             </form>
                         </Form>
-                    </Card>
+                        </Card>
+                    </div>
                 </div>
             </section>
 
-            {/* Footer Section */}
-            <footer className="py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#3c0212" }}>
-                <div className="container mx-auto max-w-6xl text-center">
-                    <p className="text-lg" style={{ color: "#fef9fb", opacity: 0.9 }}>
-                        For any queries, contact us at <strong>+91 7470915225</strong>
-                    </p>
-                    <p className="mt-4 text-sm" style={{ color: "#fef9fb", opacity: 0.7 }}>
-                        © {new Date().getFullYear()} {event.name}. All rights reserved.
-                    </p>
+            {/* QR Code Section */}
+            <section className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
+                <div className="container mx-auto max-w-4xl">
+                    <div className="opacity-0 animate-fade-in-delay" style={{ animationDelay: '600ms' }}>
+                        <div className="text-center mb-10 md:mb-12">
+                            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-4 tracking-tight" style={{ color: "#3c0212" }}>
+                                Share This Event
+                            </h2>
+                            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+                                Scan the QR code to share this event or download it to print
+                            </p>
+                            <div className="w-24 h-1 mx-auto mt-6" style={{ backgroundColor: "#3c0212" }}></div>
+                        </div>
+                        <Card className="p-8 md:p-12 rounded-2xl shadow-xl border-2" style={{ backgroundColor: "#fef9fb", borderColor: "#e5e5e5" }}>
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+                                <div className="flex flex-col items-center gap-6">
+                                    <div className="flex justify-center p-6 bg-white rounded-2xl shadow-lg" ref={qrCodeRef}>
+                                        {eventUrl && (
+                                            <QRCodeSVG
+                                                value={eventUrl}
+                                                size={256}
+                                                level="H"
+                                                includeMargin={true}
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <Button
+                                            onClick={downloadQRCode}
+                                            variant="outline"
+                                            className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg px-6 py-6"
+                                            style={{ borderColor: "#3c0212", color: "#3c0212" }}
+                                        >
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Download QR Code
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleShare("copy")}
+                                            variant="outline"
+                                            className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg px-6 py-6"
+                                            style={{ borderColor: "#3c0212", color: "#3c0212" }}
+                                        >
+                                            <Share2 className="mr-2 h-4 w-4" />
+                                            Copy Event Link
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
                 </div>
-            </footer>
+            </section>
+
+            <Footer />
+
+            {/* WhatsApp Message Dialog */}
+            <Dialog open={showWhatsAppDialog} onOpenChange={setShowWhatsAppDialog}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-serif font-bold text-center" style={{ color: "#3c0212" }}>
+                            Registration Successful!
+                        </DialogTitle>
+                        <DialogDescription className="text-center text-base pt-2">
+                            Send a message to Gurudev to get blessings
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p className="text-center text-gray-600 mb-6">
+                            Click the button below to send a WhatsApp message to Gurudev
+                        </p>
+                        <Button
+                            onClick={() => {
+                                openWhatsAppWithMessage()
+                                setShowWhatsAppDialog(false)
+                            }}
+                            className="w-full h-12 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                            style={{
+                                backgroundColor: "#25D366",
+                                color: "white",
+                            }}
+                        >
+                            <MessageCircle className="mr-2 h-5 w-5" />
+                            Send WhatsApp Message
+                        </Button>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowWhatsAppDialog(false)}
+                            className="w-full"
+                        >
+                            Maybe Later
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

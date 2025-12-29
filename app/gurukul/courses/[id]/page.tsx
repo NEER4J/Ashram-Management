@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Loader2, GraduationCap, Play, Lock } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { QuickSignupDialog } from "@/components/gurukul/quick-signup-dialog"
 
 export default function CourseDetailPage() {
@@ -83,21 +85,29 @@ export default function CourseDetailPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#fbf9ef" }}>
-                <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
+            <main className="min-h-screen flex flex-col" style={{ backgroundColor: "#fbf9ef" }}>
+                <Header />
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#3c0212" }} />
+                </div>
+                <Footer />
             </main>
         )
     }
 
     if (!course) {
         return (
-            <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#fbf9ef" }}>
-                <div className="text-center">
-                    <p className="text-slate-600 mb-4">Course not found</p>
-                    <Link href="/gurukul/courses">
-                        <Button>Browse Courses</Button>
-                    </Link>
+            <main className="min-h-screen flex flex-col" style={{ backgroundColor: "#fbf9ef" }}>
+                <Header />
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                        <p className="text-gray-600 mb-4">Course not found</p>
+                        <Link href="/gurukul/courses">
+                            <Button style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}>Browse Courses</Button>
+                        </Link>
+                    </div>
                 </div>
+                <Footer />
             </main>
         )
     }
@@ -106,7 +116,9 @@ export default function CourseDetailPage() {
     const previewModules = modules.filter(m => m.is_preview)
 
     return (
-        <main className="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#fbf9ef" }}>
+        <main className="min-h-screen flex flex-col" style={{ backgroundColor: "#fbf9ef" }}>
+            <Header />
+            <div className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
             <div className="container mx-auto max-w-6xl">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
                     {/* Main Content */}
@@ -266,6 +278,8 @@ export default function CourseDetailPage() {
                 onOpenChange={setShowSignupDialog}
                 onSuccess={handleSignupSuccess}
             />
+            </div>
+            <Footer />
         </main>
     )
 }

@@ -4,10 +4,15 @@ import { eventRegistrationSchema } from "@/app/events/schema"
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { eventId: string } }
+    { params }: { params: Promise<{ eventId: string }> | { eventId: string } }
 ) {
     try {
-        const { eventId } = params
+        // Handle both Next.js 14 and 15 params format
+        const resolvedParams = params instanceof Promise ? await params : params
+        const { eventId } = resolvedParams
+        
+        console.log("Event registration request for eventId:", eventId)
+        
         const body = await request.json()
         const { session_id, ...formData } = body
 
@@ -26,14 +31,34 @@ export async function POST(
         // Verify event exists and is published
         const { data: event, error: eventError } = await supabase
             .from("temple_events")
-            .select("id, slug, is_published")
+            .select("id, slug, is_published, name")
             .eq("id", eventId)
             .single()
 
-        if (eventError || !event || !event.is_published) {
+        if (eventError) {
+            console.error("Event query error:", eventError)
+            console.error("EventId used in query:", eventId)
             return NextResponse.json(
-                { error: "Event not found or not published" },
+                { error: `Event not found: ${eventError.message}` },
                 { status: 404 }
+            )
+        }
+
+        if (!event) {
+            console.error("Event not found for eventId:", eventId)
+            return NextResponse.json(
+                { error: "Event not found" },
+                { status: 404 }
+            )
+        }
+
+        console.log("Event found:", { id: event.id, slug: event.slug, is_published: event.is_published, name: event.name })
+
+        if (!event.is_published) {
+            console.warn("Event exists but is not published:", event.id)
+            return NextResponse.json(
+                { error: "This event is not currently published" },
+                { status: 403 }
             )
         }
 

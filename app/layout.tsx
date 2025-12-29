@@ -29,7 +29,7 @@ const ptSerif = PT_Serif({
 
 export default function RootLayout({
   children,
-}: Readonly<{  
+}: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
