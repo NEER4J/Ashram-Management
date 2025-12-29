@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server"
 import { eventRegistrationSchema } from "@/app/events/schema"
 
 export async function POST(
@@ -27,6 +27,9 @@ export async function POST(
 
         const data = validationResult.data
         const supabase = await createClient()
+        
+        // Use service role client for inserting devotee (bypasses RLS)
+        const supabaseAdmin = createServiceRoleClient()
 
         // Verify event exists and is published
         const { data: event, error: eventError } = await supabase
@@ -67,8 +70,8 @@ export async function POST(
             const year = new Date().getFullYear()
             const prefix = `DEV-${year}-`
 
-            // Get the latest devotee code for this year
-            const { data: latestDevotee, error } = await supabase
+            // Get the latest devotee code for this year (use admin client)
+            const { data: latestDevotee, error } = await supabaseAdmin
                 .from("devotees")
                 .select("devotee_code")
                 .like("devotee_code", `${prefix}%`)
@@ -111,7 +114,8 @@ export async function POST(
             membership_status: "Active",
         }
 
-        const { data: devotee, error: devoteeError } = await supabase
+        // Use admin client to insert devotee (bypasses RLS for public registration)
+        const { data: devotee, error: devoteeError } = await supabaseAdmin
             .from("devotees")
             .insert(devoteeData)
             .select()
@@ -127,7 +131,8 @@ export async function POST(
 
         // Update analytics record with devotee_id and submission timestamp
         if (session_id) {
-            const { error: analyticsError } = await supabase
+            // Use admin client for analytics update as well
+            const { error: analyticsError } = await supabaseAdmin
                 .from("event_registration_analytics")
                 .update({
                     devotee_id: devotee.id,

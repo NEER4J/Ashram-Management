@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useParams } from "next/navigation"
+import Image from "next/image"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createClient } from "@/lib/supabase/client"
@@ -11,10 +12,9 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { INDIAN_STATES, CITIES_BY_STATE, OCCUPATIONS } from "@/lib/data/indian-states-cities"
 import { Button } from "@/components/ui/button"
-import { Loader2, MessageCircle, Facebook, Twitter, Link as LinkIcon, Calendar, MapPin, Users, QrCode, Download, Share2 } from "lucide-react"
+import { Loader2, MessageCircle, Facebook, Twitter, Link as LinkIcon, Download, Share2 } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
-import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { QRCodeSVG } from "qrcode.react"
@@ -40,8 +40,20 @@ export default function EventDetailPage() {
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [isMobile, setIsMobile] = useState(false)
     const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false)
+    const [selectedMessage, setSelectedMessage] = useState<"english" | "hindi">("english")
     const qrCodeRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
+
+    // WhatsApp message options
+    const whatsappMessages = {
+        english: "Jai Gurudev, seeking your divine blessings",
+        hindi: "जय गुरुदेव, आपके दिव्य आशीर्वाद की कामना करता हूं"
+    }
+
+    // Debug: Log when dialog state changes
+    useEffect(() => {
+        console.log("WhatsApp Dialog state changed:", showWhatsAppDialog)
+    }, [showWhatsAppDialog])
 
     // Calculate event URL dynamically
     const getEventUrl = () => {
@@ -144,14 +156,14 @@ export default function EventDetailPage() {
 
     const handleWhatsAppClick = () => {
         const phoneNumber = "917470915225"
-        const message = encodeURIComponent("send a message gurudev to get blessings")
+        const message = encodeURIComponent(whatsappMessages[selectedMessage])
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
         window.open(whatsappUrl, "_blank")
     }
 
     const openWhatsAppWithMessage = () => {
         const phoneNumber = "917470915225"
-        const message = encodeURIComponent("send a message gurudev to get blessings")
+        const message = encodeURIComponent(whatsappMessages[selectedMessage])
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
         window.open(whatsappUrl, "_blank")
     }
@@ -206,6 +218,7 @@ export default function EventDetailPage() {
             
             // Show WhatsApp dialog after a short delay
             setTimeout(() => {
+                console.log("Setting showWhatsAppDialog to true")
                 setShowWhatsAppDialog(true)
             }, 500)
         } catch (error: unknown) {
@@ -279,10 +292,8 @@ export default function EventDetailPage() {
 
     return (
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#fbf9ef" }}>
-            <Header />
-            
             {/* Hero Section */}
-            <section className="relative py-24 md:py-32 lg:py-40 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundColor: "#3c0212" }}>
+            <section className="relative py-12 md:py-18 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundColor: "#3c0212" }}>
                 <div className="absolute inset-0 bg-gradient-to-br from-[#3c0212] via-[#4a0318] to-[#3c0212] opacity-100"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                 
@@ -309,45 +320,41 @@ export default function EventDetailPage() {
                             {event.description || "Join us for a divine spiritual experience"}
                         </p>
 
-                        {/* Key Info Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto mb-10 md:mb-12">
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/20">
-                                <Calendar className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-3" style={{ color: "#fef9fb" }} />
-                                <h3 className="font-semibold text-sm md:text-base mb-2" style={{ color: "#fef9fb" }}>Event Date</h3>
-                                <p className="text-xs md:text-sm font-light" style={{ color: "#fef9fb", opacity: 0.9 }}>
-                                    {formatDate(event.start_date)}
-                                    {event.start_date !== event.end_date && ` - ${formatDate(event.end_date)}`}
-                                </p>
-                            </div>
-                            {(event.city || event.state) && (
-                                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/20">
-                                    <MapPin className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-3" style={{ color: "#fef9fb" }} />
-                                    <h3 className="font-semibold text-sm md:text-base mb-2" style={{ color: "#fef9fb" }}>Location</h3>
-                                    <p className="text-xs md:text-sm font-light" style={{ color: "#fef9fb", opacity: 0.9 }}>
-                                        {[event.city, event.state].filter(Boolean).join(", ")}
-                                    </p>
-                                </div>
-                            )}
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/20 sm:col-span-2 lg:col-span-1">
-                                <Users className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-3" style={{ color: "#fef9fb" }} />
-                                <h3 className="font-semibold text-sm md:text-base mb-2" style={{ color: "#fef9fb" }}>Join Us</h3>
-                                <p className="text-xs md:text-sm font-light" style={{ color: "#fef9fb", opacity: 0.9 }}>
-                                    Register now to secure your spot
-                                </p>
+                        {/* Banner Image - Responsive */}
+                        <div className="mb-10 md:mb-12 flex justify-center">
+                            <div className="relative w-full max-w-4xl mx-auto">
+                                {/* Mobile Image */}
+                                <Image
+                                    src="/img-2.jpeg"
+                                    alt="Spiritual journey banner"
+                                    width={800}
+                                    height={1200}
+                                    className="w-full h-auto rounded-lg shadow-2xl md:hidden"
+                                    priority
+                                />
+                                {/* Desktop Image */}
+                                <Image
+                                    src="/img-1.jpeg"
+                                    alt="Spiritual journey banner"
+                                    width={1200}
+                                    height={400}
+                                    className="hidden md:block w-full h-auto rounded-lg shadow-2xl"
+                                    priority
+                                />
                             </div>
                         </div>
 
                         {/* Share Buttons */}
-                        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+                        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4" >
                             <Button
                                 onClick={() => handleShare("whatsapp")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
                                 style={{
-                                    backgroundColor: "#25D366",
-                                    color: "white",
-                                    borderColor: "#25D366"
+                                    backgroundColor: "transparent",
+                                    color: "#fef9fb",
+                                    borderColor: "#fef9fb"
                                 }}
                             >
                                 <MessageCircle className="mr-2 h-5 w-5" />
@@ -357,11 +364,11 @@ export default function EventDetailPage() {
                                 onClick={() => handleShare("facebook")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
                                 style={{
-                                    backgroundColor: "#1877F2",
-                                    color: "white",
-                                    borderColor: "#1877F2"
+                                    backgroundColor: "transparent",
+                                    color: "#fef9fb",
+                                    borderColor: "#fef9fb"
                                 }}
                             >
                                 <Facebook className="mr-2 h-5 w-5" />
@@ -371,11 +378,11 @@ export default function EventDetailPage() {
                                 onClick={() => handleShare("twitter")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
                                 style={{
-                                    backgroundColor: "#1DA1F2",
-                                    color: "white",
-                                    borderColor: "#1DA1F2"
+                                    backgroundColor: "transparent",
+                                    color: "#fef9fb",
+                                    borderColor: "#fef9fb"
                                 }}
                             >
                                 <Twitter className="mr-2 h-5 w-5" />
@@ -385,7 +392,7 @@ export default function EventDetailPage() {
                                 onClick={() => handleShare("copy")}
                                 variant="outline"
                                 size="lg"
-                                className="font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl backdrop-blur-sm"
+                                className="font-semibold w-[160px] rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
                                 style={{
                                     backgroundColor: "transparent",
                                     color: "#fef9fb",
@@ -615,6 +622,88 @@ export default function EventDetailPage() {
                 </div>
             </section>
 
+            {/* Event Details Section */}
+            <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: "#fbf9ef" }}>
+                <div className="container mx-auto max-w-4xl">
+                    <div className="opacity-0 animate-fade-in-delay" style={{ animationDelay: '500ms' }}>
+                        <div className="text-center mb-8">
+                            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold mb-2 tracking-tight" style={{ color: "#3c0212" }}>
+                                Event Details
+                            </h2>
+                            <div className="w-20 h-1 mx-auto" style={{ backgroundColor: "#3c0212" }}></div>
+                        </div>
+
+                        <Card className="p-6 md:p-8 rounded-2xl shadow-xl border-2" style={{ backgroundColor: "#fef9fb", borderColor: "#e5e5e5" }}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Date & Time */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#3c0212" }}>
+                                        <svg className="w-6 h-6" style={{ color: "#fef9fb" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-lg mb-1" style={{ color: "#3c0212" }}>Date & Time</h3>
+                                        <p className="text-gray-600 text-sm">
+                                            <span className="font-medium">Start:</span> {formatDate(event.start_date)}
+                                        </p>
+                                        <p className="text-gray-600 text-sm">
+                                            <span className="font-medium">End:</span> {formatDate(event.end_date)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Location */}
+                                {(event.city || event.state) && (
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#3c0212" }}>
+                                            <svg className="w-6 h-6" style={{ color: "#fef9fb" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-lg mb-1" style={{ color: "#3c0212" }}>Location</h3>
+                                            <p className="text-gray-700 text-base">
+                                                {[event.city, event.state].filter(Boolean).join(", ")}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Event Type */}
+                                {event.type && (
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#3c0212" }}>
+                                            <svg className="w-6 h-6" style={{ color: "#fef9fb" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-lg mb-1" style={{ color: "#3c0212" }}>Event Type</h3>
+                                            <p className="text-gray-700 text-base">{event.type}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Contact Info */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#3c0212" }}>
+                                        <svg className="w-6 h-6" style={{ color: "#fef9fb" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-lg mb-1" style={{ color: "#3c0212" }}>Contact</h3>
+                                        <p className="text-gray-700 text-base">+91 7470915225</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
+                </div>
+            </section>
+
             {/* QR Code Section */}
             <section className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
                 <div className="container mx-auto max-w-4xl">
@@ -628,7 +717,7 @@ export default function EventDetailPage() {
                             </p>
                             <div className="w-24 h-1 mx-auto mt-6" style={{ backgroundColor: "#3c0212" }}></div>
                         </div>
-                        <Card className="p-8 md:p-12 rounded-2xl shadow-xl border-2" style={{ backgroundColor: "#fef9fb", borderColor: "#e5e5e5" }}>
+                        <Card className="p-8 md:p-12 rounded-2xl shadow-xl border-2  mx-auto max-w-lg" style={{ backgroundColor: "#fef9fb", borderColor: "#e5e5e5" }}>
                             <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
                                 <div className="flex flex-col items-center gap-6">
                                     <div className="flex justify-center p-6 bg-white rounded-2xl shadow-lg" ref={qrCodeRef}>
@@ -681,10 +770,63 @@ export default function EventDetailPage() {
                             Send a message to Gurudev to get blessings
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="py-4">
-                        <p className="text-center text-gray-600 mb-6">
-                            Click the button below to send a WhatsApp message to Gurudev
-                        </p>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-3">
+                            <p className="text-sm font-medium text-gray-600">Choose your message language:</p>
+                            
+                            {/* English Message Option */}
+                            <div 
+                                onClick={() => setSelectedMessage("english")}
+                                className={`cursor-pointer border-2 rounded-lg p-4 transition-all duration-200 ${
+                                    selectedMessage === "english" 
+                                        ? "border-[#3c0212] bg-[#fef9fb]" 
+                                        : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                                }`}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                        selectedMessage === "english" ? "border-[#3c0212]" : "border-gray-300"
+                                    }`}>
+                                        {selectedMessage === "english" && (
+                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#3c0212" }}></div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs font-semibold text-gray-500 mb-1">English</p>
+                                        <p className="text-sm font-medium text-gray-800 italic">
+                                            "{whatsappMessages.english}"
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Hindi Message Option */}
+                            <div 
+                                onClick={() => setSelectedMessage("hindi")}
+                                className={`cursor-pointer border-2 rounded-lg p-4 transition-all duration-200 ${
+                                    selectedMessage === "hindi" 
+                                        ? "border-[#3c0212] bg-[#fef9fb]" 
+                                        : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                                }`}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                        selectedMessage === "hindi" ? "border-[#3c0212]" : "border-gray-300"
+                                    }`}>
+                                        {selectedMessage === "hindi" && (
+                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#3c0212" }}></div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs font-semibold text-gray-500 mb-1">हिंदी (Hindi)</p>
+                                        <p className="text-sm font-medium text-gray-800 italic">
+                                            "{whatsappMessages.hindi}"
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <Button
                             onClick={() => {
                                 openWhatsAppWithMessage()
