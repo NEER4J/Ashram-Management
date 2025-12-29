@@ -583,21 +583,6 @@ export default function EventDetailPage() {
                                     />
                                 </div>
 
-                                {isMobile && (
-                                    <div className="pt-4">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={handleWhatsAppClick}
-                                            className="w-full h-12 text-base font-semibold"
-                                            style={{ borderColor: "#25D366", color: "#25D366" }}
-                                        >
-                                            <MessageCircle className="mr-2 h-5 w-5" />
-                                            Send WhatsApp Message to Gurudev
-                                        </Button>
-                                    </div>
-                                )}
-
                                 <div className="pt-6">
                                     <Button
                                         type="submit"
