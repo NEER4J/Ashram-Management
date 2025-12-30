@@ -397,106 +397,110 @@ export default function EventDetailPage() {
                 </div>
 
                 <div className="container mx-auto max-w-7xl relative z-10">
-                    <div className="text-center mb-12 opacity-0 animate-fade-in">
-                        {event.type && (
-                            <div className="inline-block px-4 py-2 rounded-full text-sm md:text-base font-semibold mb-6 shadow-lg"
-                                style={{ backgroundColor: "#fef9fb", color: "#3c0212" }}>
-                                {event.type}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center opacity-0 animate-fade-in">
+                        {/* Left Column - Content */}
+                        <div className="text-center lg:text-left flex flex-col">
+                            {/* Top Section: Title, Description */}
+                            <div>
+                                <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight" style={{ color: "#fef9fb" }}>
+                                    {event.name}
+                                </h1>
+                                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-6 md:mb-10 lg:mb-12 leading-relaxed font-light" style={{ color: "#fef9fb", opacity: 0.95 }}>
+                                    {event.description || "An enlightening spiritual experience with Sadguru Shri Riteshwar"}
+                                </p>
                             </div>
-                        )}
-                        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight" style={{ color: "#fef9fb" }}>
-                            {event.name}
-                        </h1>
-                        <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-10 md:mb-12 max-w-4xl mx-auto leading-relaxed font-light" style={{ color: "#fef9fb", opacity: 0.95 }}>
-                            {event.description || "An enlightening spiritual experience with Sadguru Shri Riteshwar"}
-                        </p>
 
-                        {/* Banner Image - Responsive */}
-                        <div className="mb-10 md:mb-12 flex justify-center">
-                            <div className="relative w-full max-w-4xl mx-auto">
-                                {/* Mobile Image */}
-                                <Image
-                                    src="/img-3.jpeg"
-                                    alt="Spiritual journey banner"
-                                    width={800}
-                                    height={1200}
-                                    className="w-full h-auto rounded-lg shadow-2xl md:hidden"
-                                    priority
-                                />
-                                {/* Desktop Image */}
-                                <Image
-                                    src="/img-1.jpeg"
-                                    alt="Spiritual journey banner"
-                                    width={1200}
-                                    height={400}
-                                    className="hidden md:block w-full h-auto rounded-lg shadow-2xl"
-                                    priority
-                                />
+                            {/* Mobile Image - Between Description and Sharing */}
+                            <div className="flex justify-center mb-6 lg:hidden">
+                                <div className="relative w-full max-w-lg">
+                                    <Image
+                                        src="/img-3.jpeg"
+                                        alt="Spiritual journey banner"
+                                        width={800}
+                                        height={1200}
+                                        className="w-full h-auto rounded-lg shadow-2xl"
+                                        priority
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Share and Social Links */}
+                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-4">
+                                {/* Share Event Button */}
+                                <Button
+                                    onClick={() => setShowShareDialog(true)}
+                                    variant="outline"
+                                    size="lg"
+                                    className="text-lg font-semibold px-6 md:px-10 !py-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                    style={{
+                                        backgroundColor: "transparent",
+                                        color: "#fef9fb",
+                                        borderColor: "#fef9fb"
+                                    }}
+                                >
+                                    <Share2 className="mr-2 h-5 w-5" />
+                                    Share Event
+                                </Button>
+                                
+                                <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4"> 
+                                {/* Social Media Buttons */}
+                                <a 
+                                    href="https://www.facebook.com/riteshwarji.dasanudas.9/" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                    style={{ 
+                                        backgroundColor: "transparent",
+                                        color: "#fef9fb",
+                                        borderColor: "#fef9fb"
+                                    }}
+                                    aria-label="Facebook"
+                                >
+                                    <Facebook className="w-5 h-5" />
+                                </a>
+                                <a 
+                                    href="https://www.instagram.com/sadgurushririteshwar/" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                    style={{ 
+                                        backgroundColor: "transparent",
+                                        color: "#fef9fb",
+                                        borderColor: "#fef9fb"
+                                    }}
+                                    aria-label="Instagram"
+                                >
+                                    <Instagram className="w-5 h-5" />
+                                </a>
+                                <a 
+                                    href="https://www.youtube.com/channel/UCMxl7IWKuTNQIYnmBksXfUA" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                    style={{ 
+                                        backgroundColor: "transparent",
+                                        color: "#fef9fb",
+                                        borderColor: "#fef9fb"
+                                    }}
+                                    aria-label="YouTube"
+                                >
+                                    <Youtube className="w-5 h-5" />
+                                </a>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Share and Social Links */}
-                        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-                            {/* Share Event Button */}
-                            <Button
-                                onClick={() => setShowShareDialog(true)}
-                                variant="outline"
-                                size="lg"
-                                className="text-lg font-semibold px-6 md:px-10 !py-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                                style={{
-                                    backgroundColor: "transparent",
-                                    color: "#fef9fb",
-                                    borderColor: "#fef9fb"
-                                }}
-                            >
-                                <Share2 className="mr-2 h-5 w-5" />
-                                Share Event
-                            </Button>
-                            
-                            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4"> 
-                            {/* Social Media Buttons */}
-                            <a 
-                                href="https://www.facebook.com/riteshwarji.dasanudas.9/" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
-                                style={{ 
-                                    backgroundColor: "transparent",
-                                    color: "#fef9fb",
-                                    borderColor: "#fef9fb"
-                                }}
-                                aria-label="Facebook"
-                            >
-                                <Facebook className="w-5 h-5" />
-                            </a>
-                            <a 
-                                href="https://www.instagram.com/sadgurushririteshwar/" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
-                                style={{ 
-                                    backgroundColor: "transparent",
-                                    color: "#fef9fb",
-                                    borderColor: "#fef9fb"
-                                }}
-                                aria-label="Instagram"
-                            >
-                                <Instagram className="w-5 h-5" />
-                            </a>
-                            <a 
-                                href="https://www.youtube.com/channel/UCMxl7IWKuTNQIYnmBksXfUA" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
-                                style={{ 
-                                    backgroundColor: "transparent",
-                                    color: "#fef9fb",
-                                    borderColor: "#fef9fb"
-                                }}
-                                aria-label="YouTube"
-                            >
-                                <Youtube className="w-5 h-5" />
-                            </a>
+                        {/* Right Column - Desktop Image Only */}
+                        <div className="hidden lg:flex justify-end">
+                            <div className="relative w-full max-w-full">
+                                <Image
+                                    src="/img-3.jpeg"
+                                    alt="Spiritual journey banner"
+                                    width={1200}
+                                    height={600}
+                                    className="w-full h-auto rounded-lg shadow-2xl"
+                                    priority
+                                />
                             </div>
                         </div>
                     </div>
