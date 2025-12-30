@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ type PublicEvent = {
 export default function EventsListingPage() {
     const [events, setEvents] = useState<PublicEvent[]>([])
     const [loading, setLoading] = useState(true)
+    const router = useRouter()
     const supabase = createClient()
 
     useEffect(() => {
@@ -97,18 +99,19 @@ export default function EventsListingPage() {
                     ) : (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                             {events.map((event, index) => (
-                                <Link 
-                                    key={event.id} 
-                                    href={`/events/${event.slug}`}
+                                <div
+                                    key={event.id}
                                     className="opacity-0 animate-fade-in-delay"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
-                                    <Card className="flex flex-col h-full rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-2 hover:border-[#3c0212]/30 group" 
+                                    <Card 
+                                        className="flex flex-col h-full rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-2 hover:border-[#3c0212]/30 group" 
                                         style={{ 
                                             backgroundColor: "#fef9fb", 
                                             borderColor: "#e5e5e5",
                                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                                         }}
+                                        onClick={() => router.push(`/events/${event.slug}`)}
                                     >
                                         <CardHeader className="pb-4">
                                             <div className="flex items-start justify-between gap-3 mb-3">
@@ -154,6 +157,7 @@ export default function EventsListingPage() {
                                                 asChild
                                                 className="mt-auto w-full rounded-xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
                                                 style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
+                                                onClick={(e) => e.stopPropagation()}
                                             >
                                                 <Link href={`/events/${event.slug}`}>
                                                     Register Now
@@ -162,7 +166,7 @@ export default function EventsListingPage() {
                                             </Button>
                                         </CardContent>
                                     </Card>
-                                </Link>
+                                </div>
                             ))}
                         </div>
                     )}

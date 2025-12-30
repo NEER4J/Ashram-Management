@@ -416,7 +416,7 @@ export default function EventDetailPage() {
                             <div className="relative w-full max-w-4xl mx-auto">
                                 {/* Mobile Image */}
                                 <Image
-                                    src="/img-2.jpeg"
+                                    src="/img-3.jpeg"
                                     alt="Spiritual journey banner"
                                     width={800}
                                     height={1200}
