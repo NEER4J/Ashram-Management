@@ -41,21 +41,14 @@ export default function EventDetailPage() {
     const [isMobile, setIsMobile] = useState(false)
     const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false)
     const [showShareDialog, setShowShareDialog] = useState(false)
-    const [selectedMessage, setSelectedMessage] = useState<"english" | "hindi">("english")
+    const [isOtherOccupation, setIsOtherOccupation] = useState(false)
     const qrCodeRef = useRef<HTMLDivElement>(null)
     const trackingInProgress = useRef<boolean>(false)
     const supabase = createClient()
 
-    // WhatsApp message options
-    const whatsappMessages = {
-        english: "Jai Gurudev, seeking your divine blessings",
-        hindi: "जय गुरुदेव, आपके दिव्य आशीर्वाद की कामना करता हूं"
-    }
+    // WhatsApp message
+    const whatsappMessage = "फ़ोटोज़ वीडियोज़ के लिंक प्राप्त करने और गुरुदेव का आशीर्वाद प्राप्त करने हेतु मैसेज करें!"
 
-    // Debug: Log when dialog state changes
-    useEffect(() => {
-        console.log("WhatsApp Dialog state changed:", showWhatsAppDialog)
-    }, [showWhatsAppDialog])
 
     // Calculate event URL dynamically
     const getEventUrl = () => {
@@ -214,16 +207,9 @@ export default function EventDetailPage() {
         }
     }
 
-    const handleWhatsAppClick = () => {
-        const phoneNumber = "918988606060"
-        const message = encodeURIComponent(whatsappMessages[selectedMessage])
-        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
-        window.open(whatsappUrl, "_blank")
-    }
-
     const openWhatsAppWithMessage = () => {
         const phoneNumber = "918988606060"
-        const message = encodeURIComponent(whatsappMessages[selectedMessage])
+        const message = encodeURIComponent(whatsappMessage)
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
         window.open(whatsappUrl, "_blank")
     }
@@ -251,7 +237,7 @@ export default function EventDetailPage() {
         }
     }
 
-    async function onSubmit(data: EventRegistrationFormValues) {
+        async function onSubmit(data: EventRegistrationFormValues) {
         if (!event) return
 
         setLoading(true)
@@ -275,6 +261,7 @@ export default function EventDetailPage() {
 
             toast.success("Registration successful! Thank you for registering.")
             form.reset()
+            setIsOtherOccupation(false)
             
             // Show WhatsApp dialog after a short delay
             setTimeout(() => {
@@ -609,20 +596,58 @@ export default function EventDetailPage() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-base font-semibold" style={{ color: "#3c0212" }}>Occupation *</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger className="h-12 text-base">
-                                                            <SelectValue placeholder="Select your occupation" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {OCCUPATIONS.map((occ) => (
-                                                            <SelectItem key={occ} value={occ}>
-                                                                {occ}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                {isOtherOccupation ? (
+                                                    <div className="relative">
+                                                        <FormControl>
+                                                            <Input
+                                                                placeholder="Please specify your occupation"
+                                                                value={field.value}
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value
+                                                                    field.onChange(value)
+                                                                }}
+                                                                className="h-12 text-base pr-20"
+                                                            />
+                                                        </FormControl>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setIsOtherOccupation(false)
+                                                                field.onChange("")
+                                                            }}
+                                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm font-medium"
+                                                            title="Select from list"
+                                                        >
+                                                            Change
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <Select 
+                                                        onValueChange={(value) => {
+                                                            if (value === "Other") {
+                                                                setIsOtherOccupation(true)
+                                                                field.onChange("")
+                                                            } else {
+                                                                field.onChange(value)
+                                                            }
+                                                        }} 
+                                                        defaultValue={field.value}
+                                                        value={field.value}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="h-12 text-base">
+                                                                <SelectValue placeholder="Select your occupation" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {OCCUPATIONS.map((occ) => (
+                                                                <SelectItem key={occ} value={occ}>
+                                                                    {occ}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -845,71 +870,35 @@ export default function EventDetailPage() {
             <Footer />
 
             {/* WhatsApp Message Dialog */}
-            <Dialog open={showWhatsAppDialog} onOpenChange={setShowWhatsAppDialog}>
-                <DialogContent className="sm:max-w-md">
+            <Dialog open={showWhatsAppDialog} onOpenChange={() => {}}>
+                <DialogContent className="sm:max-w-md gap-0" showCloseButton={false}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-serif font-bold text-center" style={{ color: "#3c0212" }}>
                             Registration Successful!
                         </DialogTitle>
-                        <DialogDescription className="text-center text-base pt-2">
-                            Send a message to Gurudev to get blessings
+                        <DialogDescription className="text-center text-sm pt-2 text-gray-600">
+                            Send message to Gurudev to get blessings
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
-                        <div className="space-y-3">
-                            <p className="text-sm font-medium text-gray-600">Choose your message language:</p>
-                            
-                            {/* English Message Option */}
+                        {/* WhatsApp Message Preview */}
+                        <div className="relative p-4 rounded-lg" style={{ backgroundColor: "#dcf8c6" }}>
+                            <p className="text-base text-gray-800 leading-relaxed text-center">
+                                {whatsappMessage}
+                            </p>
+                            {/* WhatsApp message tail - pointing right */}
                             <div 
-                                onClick={() => setSelectedMessage("english")}
-                                className={`cursor-pointer border-2 rounded-lg p-4 transition-all duration-200 ${
-                                    selectedMessage === "english" 
-                                        ? "border-[#3c0212] bg-[#fef9fb]" 
-                                        : "border-gray-200 bg-gray-50 hover:border-gray-300"
-                                }`}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                        selectedMessage === "english" ? "border-[#3c0212]" : "border-gray-300"
-                                    }`}>
-                                        {selectedMessage === "english" && (
-                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#3c0212" }}></div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-xs font-semibold text-gray-500 mb-1">English</p>
-                                        <p className="text-sm font-medium text-gray-800 italic">
-                                            "{whatsappMessages.english}"
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Hindi Message Option */}
-                            <div 
-                                onClick={() => setSelectedMessage("hindi")}
-                                className={`cursor-pointer border-2 rounded-lg p-4 transition-all duration-200 ${
-                                    selectedMessage === "hindi" 
-                                        ? "border-[#3c0212] bg-[#fef9fb]" 
-                                        : "border-gray-200 bg-gray-50 hover:border-gray-300"
-                                }`}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                        selectedMessage === "hindi" ? "border-[#3c0212]" : "border-gray-300"
-                                    }`}>
-                                        {selectedMessage === "hindi" && (
-                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#3c0212" }}></div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-xs font-semibold text-gray-500 mb-1">हिंदी (Hindi)</p>
-                                        <p className="text-sm font-medium text-gray-800 italic">
-                                            "{whatsappMessages.hindi}"
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                                className="absolute"
+                                style={{
+                                    bottom: "8px",
+                                    right: "-8px",
+                                    width: 0,
+                                    height: 0,
+                                    borderLeft: "8px solid #dcf8c6",
+                                    borderTop: "8px solid transparent",
+                                    borderBottom: "8px solid transparent",
+                                }}
+                            ></div>
                         </div>
 
                         <Button
@@ -927,15 +916,6 @@ export default function EventDetailPage() {
                             Send WhatsApp Message
                         </Button>
                     </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowWhatsAppDialog(false)}
-                            className="w-full"
-                        >
-                            Maybe Later
-                        </Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
