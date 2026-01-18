@@ -39,6 +39,7 @@ export default function EventsListingPage() {
                 .from("temple_events")
                 .select("id, name, slug, type, start_date, end_date, city, state, description")
                 .eq("is_published", true)
+                .eq("is_active", true)
                 .order("start_date", { ascending: true })
 
             if (error) throw error

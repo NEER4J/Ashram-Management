@@ -5,7 +5,7 @@ import { useParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Download, QrCode } from "lucide-react"
+import { Download, QrCode, FileDown } from "lucide-react"
 import { toast } from "sonner"
 import { DataTable } from "@/components/ui/data-table"
 import { ColumnDef } from "@tanstack/react-table"
@@ -24,17 +24,13 @@ type RecentRegistration = {
     last_name: string | null
     mobile_number: string
     email: string | null
+    date_of_birth: string | null
     occupation: string | null
+    city: string | null
+    state: string | null
+    gender: string | null
+    devotee_code: string | null
     created_at: string
-}
-
-type RecentScan = {
-    id: string
-    session_id: string
-    qr_scan_at: string
-    form_submitted_at: string | null
-    user_agent: string | null
-    ip_address: string | null
 }
 
 type EventDetails = {
@@ -53,7 +49,6 @@ export default function EventAnalyticsPage() {
     })
     const [event, setEvent] = useState<EventDetails | null>(null)
     const [recentRegistrations, setRecentRegistrations] = useState<RecentRegistration[]>([])
-    const [recentScans, setRecentScans] = useState<RecentScan[]>([])
     const [loading, setLoading] = useState(true)
     const qrCodeRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
@@ -69,7 +64,6 @@ export default function EventAnalyticsPage() {
             fetchEvent()
             fetchAnalytics()
             fetchRecentRegistrations()
-            fetchRecentScans()
         }
     }, [eventId])
 
@@ -129,10 +123,9 @@ export default function EventAnalyticsPage() {
         try {
             const { data, error } = await supabase
                 .from("devotees")
-                .select("id, first_name, last_name, mobile_number, email, occupation, created_at")
+                .select("id, first_name, last_name, mobile_number, email, date_of_birth, occupation, city, state, gender, devotee_code, created_at")
                 .eq("event_source", event?.slug || "")
                 .order("created_at", { ascending: false })
-                .limit(50)
 
             if (error) throw error
             setRecentRegistrations(data || [])
@@ -142,35 +135,11 @@ export default function EventAnalyticsPage() {
         }
     }
 
-    const fetchRecentScans = async () => {
-        if (!eventId) return
-        try {
-            const { data, error } = await supabase
-                .from("event_registration_analytics")
-                .select("id, session_id, qr_scan_at, form_submitted_at, user_agent, ip_address")
-                .eq("event_id", eventId)
-                .order("qr_scan_at", { ascending: false })
-                .limit(20)
-
-            if (error) throw error
-            setRecentScans(data || [])
-        } catch (error) {
-            console.error("Error fetching recent scans:", error)
-            // Don't show toast for this, just log it
-        }
-    }
-
     useEffect(() => {
         if (event?.slug) {
             fetchRecentRegistrations()
         }
     }, [event?.slug])
-
-    useEffect(() => {
-        if (eventId) {
-            fetchRecentScans()
-        }
-    }, [eventId])
 
     const downloadQRCode = () => {
         if (!qrCodeRef.current || !formUrl) return
@@ -189,19 +158,86 @@ export default function EventAnalyticsPage() {
         URL.revokeObjectURL(url)
     }
 
+    const exportToCSV = () => {
+        if (recentRegistrations.length === 0) {
+            toast.error("No registrations to export")
+            return
+        }
+
+        // Define CSV headers
+        const headers = [
+            "Devotee Code",
+            "First Name",
+            "Last Name",
+            "Mobile Number",
+            "Email",
+            "Date of Birth",
+            "Occupation",
+            "City",
+            "State",
+            "Registered At"
+        ]
+
+        // Convert data to CSV rows
+        const csvRows = recentRegistrations.map(reg => [
+            reg.devotee_code || "",
+            reg.first_name || "",
+            reg.last_name || "",
+            reg.mobile_number || "",
+            reg.email || "",
+            reg.date_of_birth ? new Date(reg.date_of_birth).toLocaleDateString() : "",
+            reg.occupation || "",
+            reg.city || "",
+            reg.state || "",
+            new Date(reg.created_at).toLocaleString()
+        ])
+
+        // Combine headers and rows
+        const csvContent = [
+            headers.join(","),
+            ...csvRows.map(row => row.map(cell => {
+                // Escape commas and quotes in cell values
+                const cellValue = String(cell || "")
+                if (cellValue.includes(",") || cellValue.includes('"') || cellValue.includes("\n")) {
+                    return `"${cellValue.replace(/"/g, '""')}"`
+                }
+                return cellValue
+            }).join(","))
+        ].join("\n")
+
+        // Create blob and download
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+        const link = document.createElement("a")
+        const url = URL.createObjectURL(blob)
+        link.setAttribute("href", url)
+        link.setAttribute("download", `${event?.name || 'event'}-registrations-${new Date().toISOString().split('T')[0]}.csv`)
+        link.style.visibility = "hidden"
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+
+        toast.success("CSV exported successfully")
+    }
+
     const columns: ColumnDef<RecentRegistration>[] = [
         {
+            accessorKey: "devotee_code",
+            header: "Devotee Code",
+            cell: ({ row }) => row.original.devotee_code || "-",
+        },
+        {
             accessorKey: "first_name",
-            header: "Name",
-            cell: ({ row }) => {
-                const firstName = row.getValue("first_name") as string
-                const lastName = row.original.last_name
-                return `${firstName} ${lastName || ""}`.trim()
-            },
+            header: "First Name",
+        },
+        {
+            accessorKey: "last_name",
+            header: "Last Name",
+            cell: ({ row }) => row.original.last_name || "-",
         },
         {
             accessorKey: "mobile_number",
-            header: "Phone",
+            header: "Mobile Number",
         },
         {
             accessorKey: "email",
@@ -209,9 +245,27 @@ export default function EventAnalyticsPage() {
             cell: ({ row }) => row.original.email || "-",
         },
         {
+            accessorKey: "date_of_birth",
+            header: "Date of Birth",
+            cell: ({ row }) => {
+                const dob = row.original.date_of_birth
+                return dob ? new Date(dob).toLocaleDateString() : "-"
+            },
+        },
+        {
             accessorKey: "occupation",
             header: "Occupation",
             cell: ({ row }) => row.original.occupation || "-",
+        },
+        {
+            accessorKey: "city",
+            header: "City",
+            cell: ({ row }) => row.original.city || "-",
+        },
+        {
+            accessorKey: "state",
+            header: "State",
+            cell: ({ row }) => row.original.state || "-",
         },
         {
             accessorKey: "created_at",
@@ -330,75 +384,28 @@ export default function EventAnalyticsPage() {
                 </Card>
             </div>
 
-            {/* Recent QR Scans */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent QR Scans</CardTitle>
-                    <CardDescription>
-                        Latest QR code scans for this event (for debugging tracking)
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {recentScans.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            <QrCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No QR scans recorded yet.</p>
-                            <p className="text-sm mt-2">Scan the QR code from your phone to test tracking.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {recentScans.map((scan) => (
-                                <div
-                                    key={scan.id}
-                                    className="flex items-center justify-between p-4 border rounded-lg"
-                                >
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className={`w-2 h-2 rounded-full ${
-                                                scan.form_submitted_at ? 'bg-green-500' : 'bg-blue-500'
-                                            }`} />
-                                            <span className="text-sm font-medium">
-                                                {scan.form_submitted_at ? 'Converted' : 'Scanned Only'}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Session: {scan.session_id.substring(0, 8)}...
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Scanned: {new Date(scan.qr_scan_at).toLocaleString()}
-                                        </p>
-                                        {scan.form_submitted_at && (
-                                            <p className="text-xs text-green-600">
-                                                Submitted: {new Date(scan.form_submitted_at).toLocaleString()}
-                                            </p>
-                                        )}
-                                        {scan.user_agent && (
-                                            <p className="text-xs text-muted-foreground mt-1 truncate max-w-md">
-                                                Device: {scan.user_agent.includes('Mobile') ? '📱 Mobile' : '💻 Desktop'}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
             {/* Recent Registrations */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Recent Registrations</CardTitle>
-                    <CardDescription>
-                        Latest devotee registrations for this event
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>Recent Registrations</CardTitle>
+                            <CardDescription>
+                                All devotee registrations for this event ({recentRegistrations.length} total)
+                            </CardDescription>
+                        </div>
+                        <Button onClick={exportToCSV} variant="outline" disabled={recentRegistrations.length === 0}>
+                            <FileDown className="mr-2 h-4 w-4" />
+                            Export CSV
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <DataTable
                         data={recentRegistrations}
                         columns={columns}
                         searchKey="first_name"
-                        searchPlaceholder="Search by name..."
+                        searchPlaceholder="Search by name, phone, email..."
                     />
                 </CardContent>
             </Card>

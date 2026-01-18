@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation"
 import { INDIAN_STATES, CITIES_BY_STATE } from "@/lib/data/indian-states-cities"
 
 interface EventFormProps {
-    initialData?: Partial<EventFormValues> & { id?: string; slug?: string; is_published?: boolean; city?: string; state?: string }
+    initialData?: Partial<EventFormValues> & { id?: string; slug?: string; is_published?: boolean; is_active?: boolean; city?: string; state?: string }
     onSuccess?: () => void
 }
 
@@ -39,6 +39,7 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
             state: initialData?.state || "",
             description: initialData?.description || "",
             is_published: initialData?.is_published ?? false,
+            is_active: initialData?.is_active ?? true,
         }
     })
 
@@ -290,6 +291,29 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                             </FormLabel>
                             <FormDescription>
                                 Published events will be visible on the public events page and can accept registrations.
+                            </FormDescription>
+                        </div>
+                    </FormItem>
+                )}
+            />
+
+            <FormField
+                control={form.control}
+                name="is_active"
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel>
+                                Active Event
+                            </FormLabel>
+                            <FormDescription>
+                                When deactivated, the event URL will show a message that it cannot be accessed. The event will remain in the system but won't be accessible publicly.
                             </FormDescription>
                         </div>
                     </FormItem>

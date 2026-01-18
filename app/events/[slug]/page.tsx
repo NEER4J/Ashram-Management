@@ -29,6 +29,7 @@ type EventDetails = {
     city: string | null
     state: string | null
     description: string | null
+    is_active: boolean | null
 }
 
 export default function EventDetailPage() {
@@ -89,7 +90,7 @@ export default function EventDetailPage() {
         try {
             const { data, error } = await supabase
                 .from("temple_events")
-                .select("id, name, slug, type, start_date, end_date, city, state, description")
+                .select("id, name, slug, type, start_date, end_date, city, state, description, is_active")
                 .eq("slug", slug)
                 .eq("is_published", true)
                 .single()
@@ -323,6 +324,57 @@ export default function EventDetailPage() {
                 <div className="text-center">
                     <h1 className="text-4xl font-bold mb-4" style={{ color: "#3c0212" }}>404</h1>
                     <p className="text-xl text-gray-600">Event not found</p>
+                </div>
+            </div>
+        )
+    }
+
+    // Check if event is deactivated
+    if (event.is_active === false) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#fbf9ef" }}>
+                <div className="text-center max-w-2xl mx-auto px-4">
+                    <div className="mb-8">
+                        <svg 
+                            className="w-24 h-24 mx-auto mb-6" 
+                            style={{ color: "#3c0212" }} 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" 
+                            />
+                        </svg>
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6" style={{ color: "#3c0212" }}>
+                        Event Not Accessible
+                    </h1>
+                    <p className="text-xl md:text-2xl text-gray-700 mb-4 leading-relaxed">
+                        This event cannot be accessed at this time.
+                    </p>
+                    <p className="text-lg text-gray-600 mb-8">
+                        The event may have been deactivated or is no longer available. Please contact us for more information.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a 
+                            href="/events" 
+                            className="inline-block px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                            style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
+                        >
+                            View Other Events
+                        </a>
+                        <a 
+                            href="/" 
+                            className="inline-block px-8 py-3 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg border-2"
+                            style={{ borderColor: "#3c0212", color: "#3c0212" }}
+                        >
+                            Go to Home
+                        </a>
+                    </div>
                 </div>
             </div>
         )

@@ -11,6 +11,7 @@ export const eventSchema = z.object({
     description: z.string().optional(),
     status: z.enum(["Planned", "Confirmed", "In Progress", "Completed", "Cancelled"]).optional().default("Planned"),
     is_published: z.boolean().optional().default(false),
+    is_active: z.boolean().optional().default(true),
     coordinator_id: z.string().optional(),
 })
 

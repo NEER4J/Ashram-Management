@@ -44,6 +44,7 @@ export type TempleEvent = {
     city: string | null
     state: string | null
     is_published: boolean
+    is_active: boolean | null
 }
 
 export default function EventsPage() {
@@ -123,6 +124,18 @@ export default function EventsPage() {
                     {row.getValue("is_published") ? "Yes" : "No"}
                 </div>
             ),
+        },
+        {
+            accessorKey: "is_active",
+            header: "Active",
+            cell: ({ row }) => {
+                const isActive = row.getValue("is_active") !== false
+                return (
+                    <div className={isActive ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                        {isActive ? "Active" : "Deactivated"}
+                    </div>
+                )
+            },
         },
         {
             id: "actions",
@@ -213,6 +226,7 @@ export default function EventsPage() {
                                     description: undefined,
                                     status: editingEvent.status as any,
                                     is_published: editingEvent.is_published ?? false,
+                                    is_active: editingEvent.is_active ?? true,
                                 } : undefined}
                                 onSuccess={() => {
                                     setIsOpen(false)
