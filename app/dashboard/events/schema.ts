@@ -13,6 +13,14 @@ export const eventSchema = z.object({
     is_published: z.boolean().optional().default(false),
     is_active: z.boolean().optional().default(true),
     coordinator_id: z.string().optional(),
+    hero_image_url: z.string().url().optional().or(z.literal("")),
+    subtitle: z.string().optional(),
+    facebook_url: z.string().url().optional().or(z.literal("")),
+    instagram_url: z.string().url().optional().or(z.literal("")),
+    youtube_url: z.string().url().optional().or(z.literal("")),
+    whatsapp_number: z.string().optional(),
+    whatsapp_message: z.string().optional(),
+    contact_phone: z.string().optional(),
 })
 
 export type EventFormValues = z.infer<typeof eventSchema>

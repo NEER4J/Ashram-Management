@@ -30,6 +30,14 @@ type EventDetails = {
     state: string | null
     description: string | null
     is_active: boolean | null
+    hero_image_url: string | null
+    subtitle: string | null
+    facebook_url: string | null
+    instagram_url: string | null
+    youtube_url: string | null
+    whatsapp_number: string | null
+    whatsapp_message: string | null
+    contact_phone: string | null
 }
 
 export default function EventDetailPage() {
@@ -47,8 +55,8 @@ export default function EventDetailPage() {
     const trackingInProgress = useRef<boolean>(false)
     const supabase = createClient()
 
-    // WhatsApp message
-    const whatsappMessage = "फ़ोटोज़ वीडियोज़ के लिंक प्राप्त करने और गुरुदेव का आशीर्वाद प्राप्त करने हेतु मैसेज करें!"
+    // WhatsApp message - use dynamic or fallback
+    const whatsappMessage = event?.whatsapp_message || "फ़ोटोज़ वीडियोज़ के लिंक प्राप्त करने और गुरुदेव का आशीर्वाद प्राप्त करने हेतु मैसेज करें!"
 
 
     // Calculate event URL dynamically
@@ -90,7 +98,7 @@ export default function EventDetailPage() {
         try {
             const { data, error } = await supabase
                 .from("temple_events")
-                .select("id, name, slug, type, start_date, end_date, city, state, description, is_active")
+                .select("id, name, slug, type, start_date, end_date, city, state, description, is_active, hero_image_url, subtitle, facebook_url, instagram_url, youtube_url, whatsapp_number, whatsapp_message, contact_phone")
                 .eq("slug", slug)
                 .eq("is_published", true)
                 .single()
@@ -209,7 +217,7 @@ export default function EventDetailPage() {
     }
 
     const openWhatsAppWithMessage = () => {
-        const phoneNumber = "918988606060"
+        const phoneNumber = event?.whatsapp_number || "918988606060"
         const message = encodeURIComponent(whatsappMessage)
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
         window.open(whatsappUrl, "_blank")
@@ -445,7 +453,7 @@ export default function EventDetailPage() {
                                     {event.name}
                                 </h1>
                                 <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-6 md:mb-10 lg:mb-12 leading-relaxed font-light" style={{ color: "#fef9fb", opacity: 0.95 }}>
-                                    {event.description || "An enlightening spiritual experience with Sadguru Shri Riteshwar"}
+                                    {event.subtitle || event.description || "An enlightening spiritual experience with Sadguru Shri Riteshwar"}
                                 </p>
                             </div>
 
@@ -453,8 +461,8 @@ export default function EventDetailPage() {
                             <div className="flex justify-center mb-6 lg:hidden">
                                 <div className="relative w-full max-w-lg">
                                     <Image
-                                        src="/img-3.jpeg"
-                                        alt="Spiritual journey banner"
+                                        src={event.hero_image_url || "/img-3.jpeg"}
+                                        alt={`${event.name} banner`}
                                         width={800}
                                         height={1200}
                                         className="w-full h-auto rounded-lg shadow-2xl"
@@ -483,48 +491,54 @@ export default function EventDetailPage() {
                                 
                                 <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4"> 
                                 {/* Social Media Buttons */}
-                                <a 
-                                    href="https://www.facebook.com/riteshwarji.dasanudas.9/" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
-                                    style={{ 
-                                        backgroundColor: "transparent",
-                                        color: "#fef9fb",
-                                        borderColor: "#fef9fb"
-                                    }}
-                                    aria-label="Facebook"
-                                >
-                                    <Facebook className="w-5 h-5" />
-                                </a>
-                                <a 
-                                    href="https://www.instagram.com/sadgurushririteshwar/" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
-                                    style={{ 
-                                        backgroundColor: "transparent",
-                                        color: "#fef9fb",
-                                        borderColor: "#fef9fb"
-                                    }}
-                                    aria-label="Instagram"
-                                >
-                                    <Instagram className="w-5 h-5" />
-                                </a>
-                                <a 
-                                    href="https://www.youtube.com/channel/UCMxl7IWKuTNQIYnmBksXfUA" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
-                                    style={{ 
-                                        backgroundColor: "transparent",
-                                        color: "#fef9fb",
-                                        borderColor: "#fef9fb"
-                                    }}
-                                    aria-label="YouTube"
-                                >
-                                    <Youtube className="w-5 h-5" />
-                                </a>
+                                {(event.facebook_url || (!event.facebook_url && !event.instagram_url && !event.youtube_url)) && (
+                                    <a 
+                                        href={event.facebook_url || "https://www.facebook.com/riteshwarji.dasanudas.9/"} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                        style={{ 
+                                            backgroundColor: "transparent",
+                                            color: "#fef9fb",
+                                            borderColor: "#fef9fb"
+                                        }}
+                                        aria-label="Facebook"
+                                    >
+                                        <Facebook className="w-5 h-5" />
+                                    </a>
+                                )}
+                                {(event.instagram_url || (!event.facebook_url && !event.instagram_url && !event.youtube_url)) && (
+                                    <a 
+                                        href={event.instagram_url || "https://www.instagram.com/sadgurushririteshwar/"} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                        style={{ 
+                                            backgroundColor: "transparent",
+                                            color: "#fef9fb",
+                                            borderColor: "#fef9fb"
+                                        }}
+                                        aria-label="Instagram"
+                                    >
+                                        <Instagram className="w-5 h-5" />
+                                    </a>
+                                )}
+                                {(event.youtube_url || (!event.facebook_url && !event.instagram_url && !event.youtube_url)) && (
+                                    <a 
+                                        href={event.youtube_url || "https://www.youtube.com/channel/UCMxl7IWKuTNQIYnmBksXfUA"} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center justify-center h-11 md:h-12 px-5 md:px-6 rounded-xl font-semibold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl border-2"
+                                        style={{ 
+                                            backgroundColor: "transparent",
+                                            color: "#fef9fb",
+                                            borderColor: "#fef9fb"
+                                        }}
+                                        aria-label="YouTube"
+                                    >
+                                        <Youtube className="w-5 h-5" />
+                                    </a>
+                                )}
                                 </div>
                             </div>
                         </div>
@@ -533,8 +547,8 @@ export default function EventDetailPage() {
                         <div className="hidden lg:flex justify-end">
                             <div className="relative w-full max-w-full">
                                 <Image
-                                    src="/img-3.jpeg"
-                                    alt="Spiritual journey banner"
+                                    src={event.hero_image_url || "/img-3.jpeg"}
+                                    alt={`${event.name} banner`}
                                     width={1200}
                                     height={600}
                                     className="w-full h-auto rounded-lg shadow-2xl"
@@ -857,7 +871,7 @@ export default function EventDetailPage() {
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-lg mb-1" style={{ color: "#3c0212" }}>Contact</h3>
-                                        <p className="text-gray-700 text-base">+91 8988606060</p>
+                                        <p className="text-gray-700 text-base">{event.contact_phone || "+91 8988606060"}</p>
                                     </div>
                                 </div>
                             </div>

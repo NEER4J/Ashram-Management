@@ -45,6 +45,14 @@ export type TempleEvent = {
     state: string | null
     is_published: boolean
     is_active: boolean | null
+    hero_image_url: string | null
+    subtitle: string | null
+    facebook_url: string | null
+    instagram_url: string | null
+    youtube_url: string | null
+    whatsapp_number: string | null
+    whatsapp_message: string | null
+    contact_phone: string | null
 }
 
 export default function EventsPage() {
@@ -227,6 +235,14 @@ export default function EventsPage() {
                                     status: editingEvent.status as any,
                                     is_published: editingEvent.is_published ?? false,
                                     is_active: editingEvent.is_active ?? true,
+                                    hero_image_url: editingEvent.hero_image_url || undefined,
+                                    subtitle: editingEvent.subtitle || undefined,
+                                    facebook_url: editingEvent.facebook_url || undefined,
+                                    instagram_url: editingEvent.instagram_url || undefined,
+                                    youtube_url: editingEvent.youtube_url || undefined,
+                                    whatsapp_number: editingEvent.whatsapp_number || undefined,
+                                    whatsapp_message: editingEvent.whatsapp_message || undefined,
+                                    contact_phone: editingEvent.contact_phone || undefined,
                                 } : undefined}
                                 onSuccess={() => {
                                     setIsOpen(false)
