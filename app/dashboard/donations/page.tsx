@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { DataTable } from "@/components/ui/data-table"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react"
+import { Plus, MoreHorizontal, Edit, Trash2, FileText } from "lucide-react"
 import {
     Sheet,
     SheetContent,
@@ -39,11 +40,11 @@ export type Donation = {
     payment_mode: string
     payment_status: string
     donation_date: string
-    devotee_id: string
-    devotees: {
-        first_name: string
-        last_name: string
-    }
+    devotee_id: string | null
+    is_anonymous?: boolean
+    receipt_number?: string | null
+    receipt_generated_at?: string | null
+    devotees: { first_name: string; last_name: string } | null
 }
 
 export default function DonationsPage() {
@@ -52,7 +53,46 @@ export default function DonationsPage() {
     const [editingDonation, setEditingDonation] = useState<Donation | null>(null)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [donationToDelete, setDonationToDelete] = useState<Donation | null>(null)
+    const [receiptData, setReceiptData] = useState<{
+        donation_code: string
+        amount: number
+        donation_date: string
+        receipt_number: string | null
+        donor_name: string
+        currency?: string
+    } | null>(null)
     const supabase = createClient()
+
+    const handleGenerateReceipt = async (donation: Donation) => {
+        if (donation.receipt_generated_at && donation.receipt_number) {
+            const donorName = donation.is_anonymous ? "Anonymous" : (donation.devotees ? `${donation.devotees.first_name} ${donation.devotees.last_name || ""}`.trim() : "—")
+            setReceiptData({
+                donation_code: donation.donation_code,
+                amount: donation.amount,
+                donation_date: donation.donation_date,
+                receipt_number: donation.receipt_number,
+                donor_name: donorName,
+            })
+            return
+        }
+        const res = await fetch(`/api/donations/${donation.id}/generate-receipt`, { method: "POST" })
+        const data = await res.json()
+        if (!res.ok) {
+            toast.error(data.error || "Failed to generate receipt")
+            return
+        }
+        const donorName = data.is_anonymous ? "Anonymous" : (data.devotees ? `${data.devotees.first_name} ${data.devotees.last_name || ""}`.trim() : "—")
+        setReceiptData({
+            donation_code: data.donation_code,
+            amount: data.amount,
+            donation_date: data.donation_date,
+            receipt_number: data.receipt_number,
+            donor_name: donorName,
+            currency: data.currency || "INR",
+        })
+        fetchData()
+        toast.success("Receipt generated")
+    }
 
     const fetchData = async () => {
         const { data: donations, error } = await supabase
@@ -120,8 +160,9 @@ export default function DonationsPage() {
             id: "devotee",
             header: "Devotee",
             cell: ({ row }) => {
+                if (row.original.is_anonymous) return "Anonymous"
                 const d = row.original.devotees
-                return d ? `${d.first_name} ${d.last_name || ""}` : "Unknown"
+                return d ? `${d.first_name} ${d.last_name || ""}` : "—"
             }
         },
         {
@@ -159,6 +200,10 @@ export default function DonationsPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleGenerateReceipt(donation)}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                {donation.receipt_generated_at ? "View / Reprint receipt" : "Generate 80G receipt"}
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(donation)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
@@ -186,6 +231,9 @@ export default function DonationsPage() {
                         Track and manage temple donations and receipts.
                     </p>
                 </div>
+                <Button variant="outline" asChild>
+                    <Link href="/dashboard/donations/in-kind">In-kind</Link>
+                </Button>
                 <Sheet open={isOpen} onOpenChange={(open) => {
                     setIsOpen(open)
                     if (!open) setEditingDonation(null)
@@ -250,6 +298,30 @@ export default function DonationsPage() {
                         >
                             Delete
                         </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!receiptData} onOpenChange={() => setReceiptData(null)}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Donation receipt (80G)</DialogTitle>
+                    </DialogHeader>
+                    {receiptData && (
+                        <div id="receipt-print" className="space-y-4 text-sm">
+                            <p className="font-semibold">Receipt No: {receiptData.receipt_number || "—"}</p>
+                            <p>Date: {receiptData.donation_date}</p>
+                            <p>Donation ID: {receiptData.donation_code}</p>
+                            <p>Donor: {receiptData.donor_name}</p>
+                            <p>Amount: {receiptData.currency === "INR" ? "₹" : receiptData.currency + " "}{receiptData.amount.toLocaleString()}</p>
+                            <p className="pt-2 border-t text-muted-foreground">
+                                This is to certify that the above donation is eligible for tax deduction under Section 80G of the Income Tax Act, 1961.
+                            </p>
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setReceiptData(null)}>Close</Button>
+                        <Button onClick={() => window.print()}>Print receipt</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

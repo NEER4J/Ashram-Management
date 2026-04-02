@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog"
 import { EventForm } from "./event-form"
 import { StatusBadge } from "@/components/ui/status-badge"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
 export type TempleEvent = {
@@ -127,22 +128,18 @@ export default function EventsPage() {
         {
             accessorKey: "is_published",
             header: "Published",
-            cell: ({ row }) => (
-                <div className={row.getValue("is_published") ? "text-green-600 font-semibold" : "text-gray-400"}>
-                    {row.getValue("is_published") ? "Yes" : "No"}
-                </div>
-            ),
+            cell: ({ row }) => row.getValue("is_published")
+                ? <Badge variant="default" className="bg-green-600 hover:bg-green-700">Published</Badge>
+                : <Badge variant="secondary">Draft</Badge>,
         },
         {
             accessorKey: "is_active",
             header: "Active",
             cell: ({ row }) => {
                 const isActive = row.getValue("is_active") !== false
-                return (
-                    <div className={isActive ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-                        {isActive ? "Active" : "Deactivated"}
-                    </div>
-                )
+                return isActive
+                    ? <Badge variant="default" className="bg-green-600 hover:bg-green-700">Active</Badge>
+                    : <Badge variant="destructive">Deactivated</Badge>
             },
         },
         {

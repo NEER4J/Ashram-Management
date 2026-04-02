@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { DataTable } from "@/components/ui/data-table"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreHorizontal, Edit, Trash2, FileDown } from "lucide-react"
+import { Plus, MoreHorizontal, Edit, Trash2, FileDown, Eye } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
     Sheet,
@@ -266,6 +267,12 @@ export default function DevoteesPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/dashboard/devotees/${devotee.id}`}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View
+                                </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(devotee)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit

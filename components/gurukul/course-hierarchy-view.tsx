@@ -146,7 +146,7 @@ export function CourseHierarchyView({
                 {course.title}
               </h3>
               {course.description && (
-                <p className="text-xs text-slate-600 mb-3 line-clamp-2 min-h-[2.5rem]">
+                <p className="text-xs text-slate-600 mb-3 line-clamp-3">
                   {course.description}
                 </p>
               )}

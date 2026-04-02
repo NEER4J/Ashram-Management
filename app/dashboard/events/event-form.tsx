@@ -41,8 +41,15 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
     const [loading, setLoading] = useState(false)
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
     const [uploadingImage, setUploadingImage] = useState(false)
+    const [venues, setVenues] = useState<{ id: string; name: string }[]>([])
+    const [staff, setStaff] = useState<{ id: string; first_name: string; last_name: string | null }[]>([])
     const router = useRouter()
     const supabase = createClient()
+
+    useEffect(() => {
+        supabase.from("venues").select("id, name").eq("is_active", true).then(({ data }) => setVenues(data || []))
+        supabase.from("staff").select("id, first_name, last_name").eq("is_active", true).then(({ data }) => setStaff(data || []))
+    }, [supabase])
 
     const form = useForm<EventFormValues>({
         resolver: zodResolver(eventSchema) as any,
@@ -66,6 +73,14 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
             whatsapp_number: initialData?.whatsapp_number || "",
             whatsapp_message: initialData?.whatsapp_message || "",
             contact_phone: initialData?.contact_phone || "",
+            venue_id: initialData?.venue_id || "",
+            capacity: (initialData as { capacity?: number })?.capacity ?? undefined,
+            recurrence_rule: (initialData as { recurrence_rule?: string })?.recurrence_rule || "",
+            recurrence_end_date: (initialData as { recurrence_end_date?: string })?.recurrence_end_date || "",
+            speaker_facilitator_id: (initialData as { speaker_facilitator_id?: string })?.speaker_facilitator_id || "",
+            stream_url: (initialData as { stream_url?: string })?.stream_url || "",
+            stream_embed: (initialData as { stream_embed?: string })?.stream_embed || "",
+            budget: (initialData as { budget?: number })?.budget ?? undefined,
         }
     })
 
@@ -588,6 +603,142 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                     </FormItem>
                 )}
             />
+
+            {/* Venue, capacity, recurrence, speaker, stream */}
+            <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Venue &amp; capacity</h3>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="venue_id"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Venue</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value || undefined}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select venue" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {venues.map((v) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="capacity"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Capacity</FormLabel>
+                                <FormControl>
+                                    <Input type="number" min={0} {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} placeholder="Max attendees" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="recurrence_rule"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Recurrence</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value || undefined}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="None" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="">None</SelectItem>
+                                        <SelectItem value="daily">Daily</SelectItem>
+                                        <SelectItem value="weekly">Weekly</SelectItem>
+                                        <SelectItem value="monthly">Monthly</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="recurrence_end_date"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Recurrence end date</FormLabel>
+                                <FormControl><Input {...field} type="date" /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <FormField
+                    control={form.control}
+                    name="speaker_facilitator_id"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Speaker / Facilitator</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || undefined}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select staff" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {staff.map((s) => <SelectItem key={s.id} value={s.id}>{s.first_name} {s.last_name || ""}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="budget"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Budget (₹)</FormLabel>
+                            <FormControl>
+                                <Input type="number" min={0} {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="stream_url"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Live stream URL</FormLabel>
+                            <FormControl>
+                                <Input {...field} type="url" placeholder="https://..." />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="stream_embed"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Stream embed HTML</FormLabel>
+                            <FormControl>
+                                <Textarea {...field} rows={3} placeholder="<iframe ...></iframe>" />
+                            </FormControl>
+                            <FormDescription>Optional iframe HTML for embedded player</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
 
             <FormField
                 control={form.control}

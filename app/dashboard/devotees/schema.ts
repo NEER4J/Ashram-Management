@@ -22,6 +22,15 @@ export const devoteeSchema = z.object({
     event_source: z.string().optional(),
     membership_type: z.string().default("General"),
     membership_status: z.string().default("Active"),
+    emergency_contact_name: z.string().optional(),
+    emergency_contact_phone: z.string().optional(),
+    medical_notes: z.string().optional(),
+    dietary_preferences: z.string().optional(),
+    photo_url: z.string().optional(),
+    relationship_status: z.enum(["Active", "Inactive", "Lapsed"]).default("Active"),
+    first_visit_date: z.string().optional(), // YYYY-MM-DD
+    last_visit_date: z.string().optional(),
+    spiritual_notes: z.string().optional(),
 })
 
 export type DevoteeFormValues = z.infer<typeof devoteeSchema>

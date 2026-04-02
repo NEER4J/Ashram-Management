@@ -21,6 +21,14 @@ export const eventSchema = z.object({
     whatsapp_number: z.string().optional(),
     whatsapp_message: z.string().optional(),
     contact_phone: z.string().optional(),
+    venue_id: z.string().optional(),
+    capacity: z.number().optional(),
+    recurrence_rule: z.string().optional(),
+    recurrence_end_date: z.string().optional(),
+    speaker_facilitator_id: z.string().optional(),
+    stream_url: z.string().url().optional().or(z.literal("")),
+    stream_embed: z.string().optional(),
+    budget: z.number().optional(),
 })
 
 export type EventFormValues = z.infer<typeof eventSchema>

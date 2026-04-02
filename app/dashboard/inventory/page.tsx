@@ -2,230 +2,123 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { DataTable } from "@/components/ui/data-table"
-import { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
-import { Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react"
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
-import { InventoryForm } from "./inventory-form"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
+import { Package, MapPin, ScrollText, Truck, ArrowRightLeft, Gem, HardHat, ChevronRight, AlertTriangle } from "lucide-react"
 
-export type InventoryItem = {
-    id: string
-    name: string
-    category: string
-    current_stock: number
-    min_stock_level: number
-    unit: string
-}
-
-export default function InventoryPage() {
-    const [data, setData] = useState<InventoryItem[]>([])
-    const [isOpen, setIsOpen] = useState(false)
-    const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-    const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null)
+export default function InventoryOverviewPage() {
     const supabase = createClient()
-
-    const fetchData = async () => {
-        const { data: items } = await supabase
-            .from("inventory_items")
-            .select("*")
-            .order("name", { ascending: true })
-
-        if (items) setData(items)
-    }
+    const [stats, setStats] = useState({ totalItems: 0, lowStock: 0, locations: 0, pendingPOs: 0 })
 
     useEffect(() => {
-        fetchData()
+        Promise.all([
+            supabase.from("inventory_items").select("id, current_stock, min_stock_level"),
+            supabase.from("inventory_locations").select("id", { count: "exact", head: true }),
+            supabase.from("purchase_orders").select("id", { count: "exact", head: true }).in("status", ["Draft", "Submitted", "Approved"]),
+            supabase.from("fixed_assets").select("id", { count: "exact", head: true }),
+        ]).then(([items, locs, pos, assets]) => {
+            const allItems = items.data || []
+            setStats({
+                totalItems: allItems.length,
+                lowStock: allItems.filter((i: any) => i.current_stock <= i.min_stock_level).length,
+                locations: locs.count ?? 0,
+                pendingPOs: pos.count ?? 0,
+            })
+        })
     }, [])
 
-    const handleEdit = (item: InventoryItem) => {
-        setEditingItem(item)
-        setIsOpen(true)
-    }
-
-    const handleDelete = (item: InventoryItem) => {
-        setItemToDelete(item)
-        setDeleteDialogOpen(true)
-    }
-
-    const confirmDelete = async () => {
-        if (!itemToDelete) return
-
-        const { error } = await supabase
-            .from("inventory_items")
-            .delete()
-            .eq("id", itemToDelete.id)
-
-        if (error) {
-            toast.error("Failed to delete item")
-        } else {
-            toast.success("Item deleted successfully")
-            fetchData()
-        }
-
-        setDeleteDialogOpen(false)
-        setItemToDelete(null)
-    }
-
-    const columns: ColumnDef<InventoryItem>[] = [
+    const statCards = [
         {
-            accessorKey: "name",
-            header: "Item Name",
+            title: "Total Items",
+            value: stats.totalItems,
+            subtitle: "Inventory items",
+            icon: Package,
+            iconClass: "stat-icon stat-icon-blue",
         },
         {
-            accessorKey: "category",
-            header: "Category",
+            title: "Low Stock",
+            value: stats.lowStock,
+            subtitle: "Below minimum",
+            icon: AlertTriangle,
+            iconClass: "stat-icon bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400",
+            valueClass: stats.lowStock > 0 ? "text-red-600" : "",
         },
         {
-            accessorKey: "current_stock",
-            header: "Stock",
-            cell: ({ row }) => (
-                <div className={`font-medium ${row.original.current_stock <= row.original.min_stock_level ? "text-red-600" : ""
-                    }`}>
-                    {row.original.current_stock} {row.original.unit}
-                </div>
-            ),
+            title: "Locations",
+            value: stats.locations,
+            subtitle: "Storage areas",
+            icon: MapPin,
+            iconClass: "stat-icon stat-icon-cyan",
         },
         {
-            id: "status",
-            header: "Status",
-            cell: ({ row }) => {
-                const isLow = row.original.current_stock <= row.original.min_stock_level
-                return (
-                    <Badge variant={isLow ? "destructive" : "outline"}>
-                        {isLow ? "Low Stock" : "In Stock"}
-                    </Badge>
-                )
-            },
-        },
-        {
-            id: "actions",
-            header: "Actions",
-            cell: ({ row }) => {
-                const item = row.original
-                return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(item)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleDelete(item)}
-                                className="text-red-600"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )
-            },
+            title: "Pending POs",
+            value: stats.pendingPOs,
+            subtitle: "Active orders",
+            icon: Truck,
+            iconClass: "stat-icon stat-icon-amber",
         },
     ]
 
+    const links = [
+        { title: "Items", href: "/dashboard/inventory/items", description: "Manage inventory items and stock levels", icon: Package, iconClass: "stat-icon-blue" },
+        { title: "Locations", href: "/dashboard/inventory/locations", description: "Warehouses, storerooms, and storage areas", icon: MapPin, iconClass: "stat-icon-cyan" },
+        { title: "Transactions", href: "/dashboard/inventory/transactions", description: "Stock IN/OUT audit trail", icon: ScrollText, iconClass: "stat-icon-green" },
+        { title: "Purchase Orders", href: "/dashboard/inventory/purchase-orders", description: "Create and track purchase orders", icon: Truck, iconClass: "stat-icon-amber" },
+        { title: "Transfers", href: "/dashboard/inventory/transfers", description: "Move items between locations", icon: ArrowRightLeft, iconClass: "stat-icon-violet" },
+        { title: "Religious Items", href: "/dashboard/inventory/religious", description: "Puja samagri, idols, books", icon: Gem, iconClass: "stat-icon-maroon" },
+        { title: "Fixed Assets", href: "/dashboard/inventory/assets", description: "Land, buildings, vehicles, equipment", icon: HardHat, iconClass: "stat-icon-green" },
+    ]
+
     return (
-        <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
-            <div className="flex items-center justify-between space-y-2">
-                <div>
-                    <h2 className="text-3xl font-medium tracking-tight">Inventory</h2>
-                    <p className="text-muted-foreground">
-                        Manage stock items and track inventory levels.
-                    </p>
-                </div>
-                <Sheet open={isOpen} onOpenChange={(open) => {
-                    setIsOpen(open)
-                    if (!open) setEditingItem(null)
-                }}>
-                    <SheetTrigger asChild>
-                        <Button style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}>
-                            <Plus className="mr-2 h-4 w-4" /> Add Item
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent className="sm:max-w-xl overflow-y-auto">
-                        <SheetHeader>
-                            <SheetTitle>
-                                {editingItem ? "Edit Inventory Item" : "Add Inventory Item"}
-                            </SheetTitle>
-                            <SheetDescription>
-                                {editingItem
-                                    ? "Update item information here."
-                                    : "Register a new item in the inventory."}
-                            </SheetDescription>
-                        </SheetHeader>
-                        <div className="py-6">
-                            <InventoryForm
-                                initialData={editingItem || undefined}
-                                onSuccess={() => {
-                                    setIsOpen(false)
-                                    setEditingItem(null)
-                                    fetchData()
-                                }}
-                            />
-                        </div>
-                    </SheetContent>
-                </Sheet>
+        <div className="space-y-8 p-6 md:p-8">
+            {/* Page Header */}
+            <div>
+                <h1 className="text-2xl font-semibold tracking-tight">Inventory</h1>
+                <p className="text-sm text-muted-foreground mt-1">Track items, locations, orders, transfers, and assets.</p>
             </div>
-            <DataTable
-                data={data}
-                columns={columns}
-                searchKey="name"
-                searchPlaceholder="Filter items..."
-            />
-            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete Item</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete "{itemToDelete?.name}"? This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setDeleteDialogOpen(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={confirmDelete}
-                        >
-                            Delete
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+
+            {/* Stat Cards */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
+                {statCards.map((stat) => (
+                    <Card key={stat.title} className="group hover:shadow-soft-md hover:-translate-y-0.5 transition-all duration-200">
+                        <CardContent className="p-5">
+                            <div className="flex items-start justify-between">
+                                <div className="space-y-2">
+                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{stat.title}</p>
+                                    <p className={`text-3xl font-bold tracking-tight ${stat.valueClass || ""}`}>{stat.value}</p>
+                                    <p className="text-xs text-muted-foreground">{stat.subtitle}</p>
+                                </div>
+                                <div className={stat.iconClass}>
+                                    <stat.icon className="h-5 w-5" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Quick Navigation */}
+            <div>
+                <h2 className="text-lg font-semibold tracking-tight mb-4">Modules</h2>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
+                    {links.map((item) => (
+                        <Link key={item.href} href={item.href}>
+                            <Card className="group hover:shadow-soft-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer h-full">
+                                <CardContent className="flex items-center gap-4 p-5">
+                                    <div className={`stat-icon ${item.iconClass} transition-transform duration-200 group-hover:scale-110`}>
+                                        <item.icon className="h-5 w-5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm">{item.title}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
+                                    </div>
+                                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-transform duration-200 group-hover:translate-x-0.5" />
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))}
+                </div>
+            </div>
         </div>
     )
 }

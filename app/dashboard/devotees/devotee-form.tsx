@@ -7,6 +7,7 @@ import { DevoteeFormValues, devoteeSchema } from "./schema"
 import { FormWrapper } from "@/components/form-wrapper"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useState } from "react"
@@ -37,20 +38,34 @@ export function DevoteeForm({ initialData, onSuccess }: DevoteeFormProps) {
             country: initialData?.country || "India",
             membership_type: initialData?.membership_type || "General",
             membership_status: initialData?.membership_status || "Active",
+            emergency_contact_name: initialData?.emergency_contact_name || "",
+            emergency_contact_phone: initialData?.emergency_contact_phone || "",
+            medical_notes: initialData?.medical_notes || "",
+            dietary_preferences: initialData?.dietary_preferences || "",
+            photo_url: initialData?.photo_url || "",
+            relationship_status: (initialData?.relationship_status as "Active" | "Inactive" | "Lapsed") || "Active",
+            first_visit_date: initialData?.first_visit_date ? (typeof initialData.first_visit_date === "string" ? initialData.first_visit_date : (initialData.first_visit_date as unknown as Date)?.toString?.()?.slice(0, 10)) : "",
+            last_visit_date: initialData?.last_visit_date ? (typeof initialData.last_visit_date === "string" ? initialData.last_visit_date : (initialData.last_visit_date as unknown as Date)?.toString?.()?.slice(0, 10)) : "",
+            spiritual_notes: initialData?.spiritual_notes || "",
         }
     })
 
     async function onSubmit(data: DevoteeFormValues) {
         setLoading(true)
         try {
+            const payload = {
+                ...data,
+                first_visit_date: data.first_visit_date || null,
+                last_visit_date: data.last_visit_date || null,
+            }
             const { error } = initialData?.id
                 ? await supabase
                     .from("devotees")
-                    .update(data)
+                    .update(payload)
                     .eq("id", initialData.id)
                 : await supabase
                     .from("devotees")
-                    .insert(data)
+                    .insert(payload)
 
             if (error) throw error
 
@@ -181,6 +196,128 @@ export function DevoteeForm({ initialData, onSuccess }: DevoteeFormProps) {
                     )}
                 />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="emergency_contact_name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Emergency Contact Name</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="emergency_contact_phone"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Emergency Contact Phone</FormLabel>
+                            <FormControl><Input {...field} type="tel" /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+                <FormField
+                    control={form.control}
+                    name="medical_notes"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Medical Notes</FormLabel>
+                            <FormControl><Textarea {...field} rows={2} placeholder="Allergies, conditions, etc." /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="dietary_preferences"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Dietary Preferences</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || undefined}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select (optional)" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Vegetarian">Vegetarian</SelectItem>
+                                    <SelectItem value="Vegan">Vegan</SelectItem>
+                                    <SelectItem value="Jain">Jain</SelectItem>
+                                    <SelectItem value="Satvik">Satvik</SelectItem>
+                                    <SelectItem value="No restrictions">No restrictions</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="relationship_status"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Relationship Status</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Active">Active</SelectItem>
+                                    <SelectItem value="Inactive">Inactive</SelectItem>
+                                    <SelectItem value="Lapsed">Lapsed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="first_visit_date"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>First Visit Date</FormLabel>
+                            <FormControl><Input {...field} type="date" /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="last_visit_date"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Last Visit Date</FormLabel>
+                            <FormControl><Input {...field} type="date" /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+
+            <FormField
+                control={form.control}
+                name="spiritual_notes"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Spiritual Notes</FormLabel>
+                        <FormControl><Textarea {...field} rows={2} placeholder="Meditation, seva participation, etc." /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
             {/* Membership Type field hidden for now */}
             {/* <FormField

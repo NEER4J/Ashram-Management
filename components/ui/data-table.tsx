@@ -13,7 +13,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -42,7 +42,7 @@ export function DataTable<TData, TValue>({
     columns,
     data,
     searchKey,
-    searchPlaceholder = "Filter...",
+    searchPlaceholder = "Search...",
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -73,27 +73,30 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="w-full space-y-4">
-            <div className="flex items-center justify-between">
+            {/* Toolbar */}
+            <div className="flex items-center justify-between gap-4">
                 {searchKey && (
-                    <div className="flex items-center py-4">
+                    <div className="relative max-w-sm flex-1">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                         <Input
                             placeholder={searchPlaceholder}
                             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
                             onChange={(event) =>
                                 table.getColumn(searchKey)?.setFilterValue(event.target.value)
                             }
-                            className="max-w-sm"
+                            className="pl-9"
                         />
                     </div>
                 )}
-                <div className="flex items-center ml-auto">
+                <div className="flex items-center gap-2 ml-auto">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="ml-auto">
-                                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                            <Button variant="outline" size="sm" className="h-9">
+                                <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
+                                View
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-48">
                             {table
                                 .getAllColumns()
                                 .filter((column) => column.getCanHide())
@@ -115,11 +118,13 @@ export function DataTable<TData, TValue>({
                     </DropdownMenu>
                 </div>
             </div>
-            <div className="rounded-md border">
+
+            {/* Table */}
+            <div className="rounded-xl border border-border/50 bg-card shadow-soft-sm overflow-hidden">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
+                            <TableRow key={headerGroup.id} className="border-border/40 hover:bg-transparent">
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <TableHead key={header.id}>
@@ -156,36 +161,43 @@ export function DataTable<TData, TValue>({
                             <TableRow>
                                 <TableCell
                                     colSpan={columns.length}
-                                    className="h-24 text-center"
+                                    className="h-32 text-center text-muted-foreground"
                                 >
-                                    No results.
+                                    No results found.
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <div className="flex-1 text-sm text-muted-foreground">
-                    {table.getFilteredSelectedRowModel().rows.length} of{" "}
-                    {table.getFilteredRowModel().rows.length} row(s) selected.
-                </div>
-                <div className="space-x-2">
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                    {table.getFilteredRowModel().rows.length} row(s) total
+                </p>
+                <div className="flex items-center gap-1">
                     <Button
                         variant="outline"
-                        size="sm"
+                        size="icon"
+                        className="h-8 w-8"
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        Previous
+                        <ChevronLeft className="h-4 w-4" />
                     </Button>
+                    <div className="flex items-center justify-center text-sm font-medium min-w-[100px]">
+                        Page {table.getState().pagination.pageIndex + 1} of{" "}
+                        {table.getPageCount()}
+                    </div>
                     <Button
                         variant="outline"
-                        size="sm"
+                        size="icon"
+                        className="h-8 w-8"
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                     >
-                        Next
+                        <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
             </div>

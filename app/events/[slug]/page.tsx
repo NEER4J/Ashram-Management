@@ -38,6 +38,8 @@ type EventDetails = {
     whatsapp_number: string | null
     whatsapp_message: string | null
     contact_phone: string | null
+    stream_url: string | null
+    stream_embed: string | null
 }
 
 export default function EventDetailPage() {
@@ -98,7 +100,7 @@ export default function EventDetailPage() {
         try {
             const { data, error } = await supabase
                 .from("temple_events")
-                .select("id, name, slug, type, start_date, end_date, city, state, description, is_active, hero_image_url, subtitle, facebook_url, instagram_url, youtube_url, whatsapp_number, whatsapp_message, contact_phone")
+                .select("id, name, slug, type, start_date, end_date, city, state, description, is_active, hero_image_url, subtitle, facebook_url, instagram_url, youtube_url, whatsapp_number, whatsapp_message, contact_phone, stream_url, stream_embed")
                 .eq("slug", slug)
                 .eq("is_published", true)
                 .single()
@@ -577,6 +579,34 @@ export default function EventDetailPage() {
                                 </p>
                             </Card>
                         </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Live stream section */}
+            {(event.stream_url || event.stream_embed) && (
+                <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8">
+                    <div className="container mx-auto max-w-4xl">
+                        <div className="text-center mb-8">
+                            <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: "#3c0212" }}>
+                                Live Stream
+                            </h2>
+                            <div className="w-24 h-1 mx-auto mt-4" style={{ backgroundColor: "#3c0212" }}></div>
+                        </div>
+                        <Card className="p-4 rounded-2xl border-2 overflow-hidden" style={{ borderColor: "#e5e5e5" }}>
+                            {event.stream_embed ? (
+                                <div className="aspect-video w-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:min-h-[300px]" dangerouslySetInnerHTML={{ __html: event.stream_embed }} />
+                            ) : event.stream_url ? (
+                                <div className="aspect-video w-full">
+                                    <iframe src={event.stream_url} title="Live stream" className="w-full h-full min-h-[300px]" allowFullScreen />
+                                </div>
+                            ) : null}
+                            {event.stream_url && !event.stream_embed && (
+                                <p className="mt-2 text-center text-sm text-muted-foreground">
+                                    <a href={event.stream_url} target="_blank" rel="noopener noreferrer" className="underline">Open in new tab</a>
+                                </p>
+                            )}
+                        </Card>
                     </div>
                 </section>
             )}

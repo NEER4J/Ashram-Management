@@ -56,7 +56,9 @@ export function DonationForm({ initialData, onSuccess }: DonationFormProps) {
             transaction_ref: initialData?.transaction_ref ?? "",
             purpose: initialData?.purpose ?? "",
             category_id: initialData?.category_id ?? undefined,
-            receipt_generated: initialData?.receipt_generated ?? false
+            receipt_generated: initialData?.receipt_generated ?? false,
+            is_anonymous: (initialData as { is_anonymous?: boolean })?.is_anonymous ?? false,
+            currency: (initialData as { currency?: string })?.currency ?? "INR",
         }
     })
 
@@ -96,6 +98,9 @@ export function DonationForm({ initialData, onSuccess }: DonationFormProps) {
             // Handle optional UUID fields - convert empty strings to null
             if (!submitData.category_id || submitData.category_id.trim() === "") {
                 submitData.category_id = null
+            }
+            if (submitData.is_anonymous || !submitData.devotee_id || submitData.devotee_id.trim() === "") {
+                submitData.devotee_id = null
             }
 
             // Generate donation code only for new donations
@@ -139,14 +144,15 @@ export function DonationForm({ initialData, onSuccess }: DonationFormProps) {
                 name="devotee_id"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Devotee</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Devotee (optional if anonymous)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || undefined} disabled={form.watch("is_anonymous")}>
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select Devotee" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                                <SelectItem value="">—</SelectItem>
                                 {devotees.map((d) => (
                                     <SelectItem key={d.id} value={d.id}>
                                         {d.first_name} {d.last_name} ({d.mobile_number})
@@ -155,6 +161,18 @@ export function DonationForm({ initialData, onSuccess }: DonationFormProps) {
                             </SelectContent>
                         </Select>
                         <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="is_anonymous"
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-center gap-2">
+                        <FormControl>
+                            <input type="checkbox" checked={field.value} onChange={(e) => { field.onChange(e.target.checked); if (e.target.checked) form.setValue("devotee_id", "") }} />
+                        </FormControl>
+                        <FormLabel className="!mt-0">Anonymous donation</FormLabel>
                     </FormItem>
                 )}
             />
