@@ -126,7 +126,7 @@ export default function CourseDetailPage() {
                                 <img
                                     src={course.cover_image_url}
                                     alt={course.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover aspect-square aspect-square"
                                 />
                             </div>
                         )}

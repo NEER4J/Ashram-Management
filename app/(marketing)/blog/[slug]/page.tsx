@@ -103,7 +103,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Related posts */}
       {related.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-zinc-50 border-t border-zinc-100">
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-100 border-t border-zinc-100">
           <div className="container mx-auto max-w-7xl">
             <h2 className="font-serif text-2xl font-bold text-zinc-950 mb-8">Related Articles</h2>
             <div className="grid md:grid-cols-3 gap-6">

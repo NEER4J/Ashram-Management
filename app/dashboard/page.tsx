@@ -15,6 +15,10 @@ import {
     ArrowRight,
     Loader2,
     BookOpen,
+    ExternalLink,
+    Copy,
+    Check,
+    Globe,
 } from "lucide-react";
 
 interface DashboardStats {
@@ -48,11 +52,24 @@ export default function DashboardPage() {
         totalOrders: 0,
     });
     const [loading, setLoading] = useState(true);
+    const [publicSlug, setPublicSlug] = useState<string | null>(null);
+    const [isPublic, setIsPublic] = useState(false);
+    const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
     const supabase = createClient();
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
+                // Fetch ashram public slug
+                const { data: settings } = await supabase
+                    .from("ashram_settings")
+                    .select("public_slug, is_public")
+                    .single();
+                if (settings) {
+                    setPublicSlug(settings.public_slug || null);
+                    setIsPublic(settings.is_public || false);
+                }
+
                 // Fetch all statistics in parallel
                 const [
                     devoteesResult,
@@ -175,6 +192,28 @@ export default function DashboardPage() {
         },
     ];
 
+    const copyUrl = (url: string) => {
+        navigator.clipboard.writeText(url);
+        setCopiedUrl(url);
+        setTimeout(() => setCopiedUrl(null), 2000);
+    };
+
+    const publicPages = publicSlug ? [
+        { label: "Home",         path: "",             desc: "Ashram public homepage" },
+        { label: "Events",       path: "/events",      desc: "Events & festivals listing" },
+        { label: "Courses",      path: "/courses",     desc: "Study materials & courses" },
+        { label: "Book a Stay",  path: "/stay",        desc: "Rooms & accommodation" },
+        { label: "Donate",       path: "/donate",      desc: "Donation page" },
+        { label: "Pujas",        path: "/pujas",       desc: "Puja booking" },
+        { label: "Seva",         path: "/seva",        desc: "Volunteer / seva signup" },
+        { label: "Login",        path: "/login",       desc: "Public user sign in" },
+        { label: "Sign Up",      path: "/signup",      desc: "Public user registration" },
+        { label: "My Portal",    path: "/my",          desc: "User portal (bookings, courses, etc.)" },
+    ].map(p => ({
+        ...p,
+        url: `${typeof window !== "undefined" ? window.location.origin : ""}/a/${publicSlug}${p.path}`,
+    })) : [];
+
     const quickActions = [
         { title: "Add Devotee", link: "/dashboard/devotees", icon: Users },
         { title: "Record Donation", link: "/dashboard/donations", icon: Banknote },
@@ -258,6 +297,93 @@ export default function DashboardPage() {
                             );
                         })}
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* Public Site URLs */}
+            <Card className="border-slate-200">
+                <CardHeader>
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <CardTitle className="text-slate-900 flex items-center gap-2">
+                                <Globe className="h-4 w-4" style={{ color: "#3c0212" }} />
+                                Public Site URLs
+                            </CardTitle>
+                            <CardDescription>
+                                Share these links with devotees and visitors
+                            </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {isPublic ? (
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                                    Live
+                                </span>
+                            ) : (
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+                                    Not Published
+                                </span>
+                            )}
+                            {publicSlug && (
+                                <Link
+                                    href={`/dashboard/settings`}
+                                    className="text-xs text-slate-400 hover:text-slate-700 transition-colors"
+                                >
+                                    Edit in Settings →
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {!publicSlug ? (
+                        <div className="text-center py-6">
+                            <p className="text-sm text-slate-400 mb-3">No public slug configured yet.</p>
+                            <Link href="/dashboard/settings">
+                                <Button variant="outline" size="sm" className="border-slate-200">
+                                    Configure in Settings
+                                </Button>
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            {publicPages.map((page) => (
+                                <div
+                                    key={page.path}
+                                    className="group flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-[90px] flex-shrink-0">
+                                            <span className="text-xs font-semibold text-slate-700">{page.label}</span>
+                                        </div>
+                                        <span className="text-xs text-slate-400 font-mono truncate hidden sm:block">
+                                            /a/{publicSlug}{page.path || ""}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                        <button
+                                            onClick={() => copyUrl(page.url)}
+                                            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors opacity-0 group-hover:opacity-100"
+                                            title="Copy URL"
+                                        >
+                                            {copiedUrl === page.url
+                                                ? <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                                : <Copy className="h-3.5 w-3.5" />
+                                            }
+                                        </button>
+                                        <a
+                                            href={page.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors opacity-0 group-hover:opacity-100"
+                                            title="Open in new tab"
+                                        >
+                                            <ExternalLink className="h-3.5 w-3.5" />
+                                        </a>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

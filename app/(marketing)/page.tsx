@@ -299,7 +299,7 @@ export default function HomePage() {
       </section>
 
       {/* ── 6. SPOTLIGHT — Gurukul ───────────────────────────────────────────── */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-zinc-50 border-t border-zinc-100">
+      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-gray-100 border-t border-zinc-100">
         <div className="container mx-auto max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="relative overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.12)] rounded-2xl">

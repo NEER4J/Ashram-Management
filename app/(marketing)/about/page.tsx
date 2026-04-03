@@ -66,7 +66,7 @@ export default function AboutPage() {
       <section className="py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-white border-b border-zinc-100">
         <div className="container mx-auto max-w-3xl">
           <div className="border-l-4 border-[#DC2626] pl-8">
-            <blockquote className="font-serif text-2xl md:text-3xl font-bold text-zinc-950 leading-snug mb-4">
+            <blockquote className="font-serif text-2xl md:text-4xl font-bold text-zinc-950 leading-snug mb-4">
               &ldquo;Most Ashram administrators are deeply committed, deeply experienced — but deeply under-resourced when it comes to management tools.&rdquo;
             </blockquote>
             <p className="text-zinc-400 text-sm">— Founding Team, Ashram Management</p>

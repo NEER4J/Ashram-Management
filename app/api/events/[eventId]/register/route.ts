@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server"
-import { eventRegistrationSchema } from "@/app/events/schema"
+import { eventRegistrationSchema } from "@/app/(marketing)/events/schema"
 
 export async function POST(
     request: NextRequest,

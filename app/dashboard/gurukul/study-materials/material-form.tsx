@@ -319,7 +319,7 @@ export function MaterialForm({ initialData, onSuccess }: MaterialFormProps) {
                                     <img
                                         src={field.value}
                                         alt="Cover"
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover aspect-square"
                                     />
                                     <Button
                                         type="button"

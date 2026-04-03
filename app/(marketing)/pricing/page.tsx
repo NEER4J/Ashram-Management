@@ -179,7 +179,7 @@ export default function PricingPage() {
       {/* Comparison table */}
       <section className="py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-white border-t border-zinc-100">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="font-serif text-3xl font-bold text-zinc-950 mb-10 text-center">Compare all features</h2>
+          <h2 className="font-serif text-4xl font-bold text-zinc-950 mb-10 text-center">Compare all features</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -206,9 +206,9 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-zinc-50 border-t border-zinc-100">
+      <section className="py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-gray-100 border-t border-zinc-100">
         <div className="container mx-auto max-w-3xl">
-          <h2 className="font-serif text-3xl font-bold text-zinc-950 mb-10 text-center">Frequently asked questions</h2>
+          <h2 className="font-serif text-4xl font-bold text-zinc-950 mb-10 text-center">Frequently asked questions</h2>
           <div className="space-y-0">
             {faqs.map((faq, i) => (
               <div key={i} className="border-b border-zinc-200 py-6">

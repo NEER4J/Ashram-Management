@@ -40,7 +40,7 @@ export default async function AshramPublicLayout({ children, params }: Props) {
   if (!ashram) notFound();
 
   return (
-    <div className="min-h-screen bg-white text-zinc-950">
+    <div className="min-h-screen bg-white text-zinc-950 overflow-x-hidden">
       <AshramPublicHeader ashram={ashram} />
       <main className="pt-[64px]">{children}</main>
       <AshramPublicFooter ashram={ashram} />

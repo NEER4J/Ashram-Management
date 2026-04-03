@@ -216,7 +216,7 @@ export function CourseBuilder({ courseId, initialData, onSave, mode }: CourseBui
                                 <img
                                     src={coverImageUrl}
                                     alt="Cover"
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover aspect-square"
                                 />
                                 <Button
                                     type="button"

@@ -123,7 +123,7 @@ export default function MyLearningPage() {
                                             <img
                                                 src={course.cover_image_url}
                                                 alt={course.title}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover aspect-square"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
@@ -188,7 +188,7 @@ export default function MyLearningPage() {
                                         <img
                                             src={material.cover_image_url}
                                             alt={material.title}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover aspect-square"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">

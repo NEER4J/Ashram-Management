@@ -47,7 +47,7 @@ export function MaterialCard({
                         <img
                             src={cover_image_url}
                             alt={title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            className="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500"
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center group-hover:bg-slate-200 transition-colors">
