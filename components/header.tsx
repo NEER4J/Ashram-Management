@@ -2,148 +2,198 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   Users,
-  Heart,
-  Calendar,
-  BedDouble,
-  Wallet,
+  CurrencyIcon,
+  CalendarCheck,
+  Bed,
   BookOpen,
   UtensilsCrossed,
   HandHeart,
-  Menu,
-  X,
+  Wallet,
+  Package,
+  Stethoscope,
+  GraduationCap,
   ChevronDown,
   ChevronRight,
-  FileText,
-  LayoutDashboard,
+  X,
 } from "lucide-react";
 
 /* ─── Types ─────────────────────────────────────────────────────────────────── */
-type ActiveMenu = "features" | "resources" | null;
+type ActiveMenu = "features" | "solutions" | "resources" | null;
 
 /* ─── Features Mega Menu ─────────────────────────────────────────────────────── */
 const featureHighlights = [
-  {
-    icon: Users,
-    title: "Devotee Management",
-    desc: "Complete registry, relationships & engagement tracking.",
-    href: "/#features",
-  },
-  {
-    icon: Heart,
-    title: "Donations & Receipts",
-    desc: "80G receipts, donor history & in-kind donations.",
-    href: "/#features",
-  },
-  {
-    icon: Calendar,
-    title: "Events & Registration",
-    desc: "Publish events, manage registrations & attendance.",
-    href: "/#features",
-  },
-  {
-    icon: BedDouble,
-    title: "Accommodation",
-    desc: "Guest rooms, bookings, check-in & occupancy reports.",
-    href: "/#features",
-  },
+  { icon: Users,         title: "Devotee Management",   desc: "Registry, families, relationships & engagement.",      href: "/features#devotees" },
+  { icon: CurrencyIcon,  title: "Donations & Receipts", desc: "80G receipts, donor history & in-kind donations.",      href: "/features#donations" },
+  { icon: CalendarCheck, title: "Events & Registration", desc: "Publish events, registrations & QR check-in.",          href: "/features#events" },
+  { icon: Bed,           title: "Accommodation",        desc: "Guest rooms, bookings & occupancy reports.",             href: "/features#accommodation" },
 ];
 
 const featureMore = [
-  { icon: Wallet, title: "Accounting & GST", href: "/#features" },
-  { icon: BookOpen, title: "Gurukul & Courses", href: "/gurukul" },
-  { icon: UtensilsCrossed, title: "Kitchen & Prasad", href: "/#features" },
-  { icon: HandHeart, title: "Seva & Volunteers", href: "/#features" },
+  { icon: Wallet,         title: "Accounting & GST",  href: "/features#accounting" },
+  { icon: GraduationCap, title: "Gurukul & Courses",  href: "/features#gurukul" },
+  { icon: UtensilsCrossed, title: "Kitchen & Prasad", href: "/features#kitchen" },
+  { icon: HandHeart,     title: "Seva & Volunteers",  href: "/features#seva" },
+  { icon: Package,       title: "Inventory",          href: "/features#inventory" },
+  { icon: Stethoscope,   title: "Medical & Wellness", href: "/features#medical" },
 ];
 
 function FeaturesMegaMenu({ isOpen }: { isOpen: boolean }) {
   if (!isOpen) return null;
-
   return (
-    <div
-      className="w-full border-b animate-mega-menu-in"
-      style={{ backgroundColor: "#fbf9ef", borderColor: "#3c0212" }}
-    >
+    <div className="w-full border-b border-zinc-100 bg-white animate-mega-menu-in shadow-soft-lg">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-12 gap-6">
           {/* Left — 4 feature cards */}
-          <div className="md:col-span-8 grid grid-cols-2 gap-3">
+          <div className="col-span-7 grid grid-cols-2 gap-3">
             {featureHighlights.map((f) => {
               const Icon = f.icon;
               return (
                 <Link
                   key={f.title}
                   href={f.href}
-                  className="group flex gap-3 p-4 border transition-colors hover:border-[#3c0212]"
-                  style={{ borderColor: "#3c0212", backgroundColor: "#fef9fb" }}
+                  className="group flex gap-3 p-4 border border-zinc-100 hover:border-[#DC2626]/30 hover:bg-[#DC2626]/[0.02] transition-all duration-150"
                 >
-                  <div
-                    className="flex-shrink-0 p-2 border self-start"
-                    style={{ borderColor: "#3c0212" }}
-                  >
-                    <Icon className="h-4 w-4" style={{ color: "#3c0212" }} />
+                  <div className="flex-shrink-0 p-2 bg-zinc-50 group-hover:bg-[#DC2626]/10 transition-colors self-start">
+                    <Icon className="h-4 w-4 text-zinc-500 group-hover:text-[#DC2626] transition-colors" />
                   </div>
                   <div>
-                    <div
-                      className="font-semibold text-sm mb-0.5"
-                      style={{ color: "#3c0212" }}
-                    >
-                      {f.title}
-                    </div>
-                    <p className="text-xs leading-relaxed" style={{ color: "#3c0212", opacity: 0.6 }}>
-                      {f.desc}
-                    </p>
+                    <div className="font-semibold text-sm text-zinc-900 mb-0.5 group-hover:text-[#DC2626] transition-colors">{f.title}</div>
+                    <p className="text-xs text-zinc-500 leading-relaxed">{f.desc}</p>
                   </div>
                 </Link>
               );
             })}
           </div>
 
-          {/* Right — more modules + CTA */}
-          <div className="md:col-span-4 flex flex-col justify-between">
-            <div>
-              <p
-                className="text-xs font-bold tracking-widest uppercase mb-3"
-                style={{ color: "#3c0212", opacity: 0.45 }}
-              >
-                More Modules
-              </p>
-              <ul className="space-y-2">
-                {featureMore.map((f) => {
-                  const Icon = f.icon;
-                  return (
-                    <li key={f.title}>
-                      <Link
-                        href={f.href}
-                        className="flex items-center gap-2.5 text-sm group transition-opacity hover:opacity-60"
-                        style={{ color: "#3c0212" }}
-                      >
-                        <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                        {f.title}
-                        <ChevronRight className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-            <div
-              className="mt-6 p-4 border"
-              style={{ borderColor: "#3c0212", backgroundColor: "#3c0212" }}
-            >
-              <p className="text-xs font-semibold mb-2" style={{ color: "#fef9fb", opacity: 0.8 }}>
-                Ready to get started?
-              </p>
+          {/* Center — more modules */}
+          <div className="col-span-3">
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-zinc-400 mb-3">More Modules</p>
+            <ul className="space-y-1.5">
+              {featureMore.map((f) => {
+                const Icon = f.icon;
+                return (
+                  <li key={f.title}>
+                    <Link
+                      href={f.href}
+                      className="flex items-center gap-2.5 text-sm text-zinc-600 hover:text-zinc-950 group transition-colors py-1"
+                    >
+                      <Icon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400 group-hover:text-[#DC2626] transition-colors" />
+                      {f.title}
+                      <ChevronRight className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Right — CTA card */}
+          <div className="col-span-2">
+            <div className="h-full bg-[#09090B] p-5 flex flex-col justify-between">
+              <div>
+                <BookOpen className="h-5 w-5 text-white/40 mb-3" />
+                <p className="text-sm font-semibold text-white leading-snug mb-1">Built for India's spiritual communities</p>
+                <p className="text-xs text-white/50 leading-relaxed">Every feature purpose-built for Ashrams, temples, and trusts.</p>
+              </div>
               <Link
                 href="/auth/sign-up"
-                className="inline-flex items-center text-sm font-semibold transition-opacity hover:opacity-75"
-                style={{ color: "#fef9fb" }}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80 hover:text-white transition-colors mt-4"
               >
-                Start Free Trial
-                <ChevronRight className="h-4 w-4 ml-1" />
+                Start Free Trial <ChevronRight className="h-3 w-3" />
               </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Solutions Mega Menu ────────────────────────────────────────────────────── */
+const solutionsByType = [
+  { label: "Ashrams & Monasteries",   href: "/solutions#ashrams" },
+  { label: "Temples & Math",          href: "/solutions#temples" },
+  { label: "Yoga Institutes",         href: "/solutions#yoga" },
+  { label: "Trusts & NGOs",           href: "/solutions#trusts" },
+  { label: "Vedic Schools (Gurukul)", href: "/solutions#vedic" },
+];
+
+const solutionsByUseCase = [
+  { label: "Manage Devotees",    href: "/features#devotees" },
+  { label: "Accept Donations",   href: "/features#donations" },
+  { label: "Run Events",         href: "/features#events" },
+  { label: "Teach Online",       href: "/features#gurukul" },
+  { label: "Handle Accounts",    href: "/features#accounting" },
+  { label: "Manage Volunteers",  href: "/features#seva" },
+];
+
+function SolutionsMegaMenu({ isOpen }: { isOpen: boolean }) {
+  if (!isOpen) return null;
+  return (
+    <div className="w-full border-b border-zinc-100 bg-white animate-mega-menu-in shadow-soft-lg">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-12 gap-6">
+          {/* By Org Type */}
+          <div className="col-span-4">
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-zinc-400 mb-4">By Organisation Type</p>
+            <ul className="space-y-1">
+              {solutionsByType.map((s) => (
+                <li key={s.label}>
+                  <Link
+                    href={s.href}
+                    className="flex items-center justify-between group py-2 border-b border-zinc-50 text-sm text-zinc-600 hover:text-zinc-950 transition-colors"
+                  >
+                    {s.label}
+                    <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-[#DC2626]" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* By Use Case */}
+          <div className="col-span-4">
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-zinc-400 mb-4">By Use Case</p>
+            <ul className="space-y-1">
+              {solutionsByUseCase.map((s) => (
+                <li key={s.label}>
+                  <Link
+                    href={s.href}
+                    className="flex items-center justify-between group py-2 border-b border-zinc-50 text-sm text-zinc-600 hover:text-zinc-950 transition-colors"
+                  >
+                    {s.label}
+                    <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-[#DC2626]" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Featured card */}
+          <div className="col-span-4">
+            <div
+              className="h-full min-h-[220px] relative overflow-hidden"
+              style={{
+                backgroundImage: "url('https://images.unsplash.com/photo-1544427920-c49ccfb85579?w=400&q=70')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 p-5">
+                <p className="text-xs text-white/60 mb-1.5">Customer Story</p>
+                <p className="text-sm font-semibold text-white leading-snug mb-3">
+                  "Setup took 10 minutes. Now we manage 1,200 devotees effortlessly."
+                </p>
+                <Link
+                  href="/about"
+                  className="text-xs font-semibold text-[#DC2626] hover:text-red-400 transition-colors inline-flex items-center gap-1"
+                >
+                  Read more <ChevronRight className="h-3 w-3" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -154,70 +204,38 @@ function FeaturesMegaMenu({ isOpen }: { isOpen: boolean }) {
 
 /* ─── Resources Mega Menu ────────────────────────────────────────────────────── */
 const resourceCards = [
-  {
-    title: "Events",
-    desc: "Browse upcoming spiritual events, satsangs & celebrations.",
-    href: "/events",
-    dark: true,
-  },
-  {
-    title: "Gurukul Store",
-    desc: "Courses, study materials and video content for devotees.",
-    href: "/gurukul",
-    dark: false,
-  },
-  {
-    title: "Book a Stay",
-    desc: "Reserve accommodation at the Ashram for your visit.",
-    href: "/book-stay",
-    dark: false,
-  },
-  {
-    title: "Contact Support",
-    desc: "Get help from our team. We are here for you.",
-    href: "mailto:hello@virtualxcellence.com",
-    dark: false,
-  },
+  { title: "Events",        desc: "Browse upcoming spiritual events and satsangs.",       href: "/events",     dark: true },
+  { title: "Gurukul Store", desc: "Courses, study materials & video content.",            href: "/gurukul",    dark: false },
+  { title: "Book a Stay",   desc: "Reserve accommodation at the Ashram.",                href: "/book-stay",  dark: false },
+  { title: "Blog",          desc: "Insights and guides for Ashram administrators.",      href: "/blog",       dark: false },
+  { title: "Contact",       desc: "Get in touch with our team.",                          href: "/contact",    dark: false },
+  { title: "Changelog",     desc: "See what's new in the platform.",                    href: "/changelog",  dark: false },
 ];
 
 function ResourcesMegaMenu({ isOpen }: { isOpen: boolean }) {
   if (!isOpen) return null;
-
   return (
-    <div
-      className="w-full border-b animate-mega-menu-in"
-      style={{ backgroundColor: "#fbf9ef", borderColor: "#3c0212" }}
-    >
+    <div className="w-full border-b border-zinc-100 bg-white animate-mega-menu-in shadow-soft-lg">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           {resourceCards.map((card) => (
             <Link
               key={card.title}
               href={card.href}
-              className="group flex flex-col p-6 min-h-[160px] border transition-opacity hover:opacity-90"
-              style={{
-                borderColor: "#3c0212",
-                backgroundColor: card.dark ? "#3c0212" : "#fef9fb",
-              }}
+              className={`group flex flex-col p-5 border transition-all duration-150 hover:-translate-y-0.5 hover:shadow-soft-md ${
+                card.dark
+                  ? "bg-[#09090B] border-transparent"
+                  : "bg-white border-zinc-100 hover:border-[#DC2626]/20"
+              }`}
             >
-              <h3
-                className="text-lg font-serif font-bold mb-2"
-                style={{ color: card.dark ? "#fef9fb" : "#3c0212" }}
-              >
+              <h3 className={`font-serif text-base font-bold mb-1.5 ${card.dark ? "text-white" : "text-zinc-900"}`}>
                 {card.title}
               </h3>
-              <p
-                className="text-xs leading-relaxed mb-auto"
-                style={{ color: card.dark ? "#fef9fb" : "#3c0212", opacity: card.dark ? 0.8 : 0.65 }}
-              >
+              <p className={`text-xs leading-relaxed flex-1 ${card.dark ? "text-white/55" : "text-zinc-500"}`}>
                 {card.desc}
               </p>
-              <span
-                className="inline-flex items-center text-xs font-semibold mt-4 transition-gap group-hover:gap-1"
-                style={{ color: card.dark ? "#fef9fb" : "#3c0212" }}
-              >
-                Learn more
-                <ChevronRight className="h-3.5 w-3.5 ml-1" />
+              <span className={`inline-flex items-center gap-1 text-xs font-semibold mt-4 ${card.dark ? "text-white/60 group-hover:text-white" : "text-[#DC2626]"} transition-colors`}>
+                Explore <ChevronRight className="h-3 w-3" />
               </span>
             </Link>
           ))}
@@ -231,33 +249,51 @@ function ResourcesMegaMenu({ isOpen }: { isOpen: boolean }) {
 export function Header() {
   const [activeMenu, setActiveMenu] = useState<ActiveMenu>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileFeatureOpen, setMobileFeatureOpen] = useState(false);
-  const [mobileResourceOpen, setMobileResourceOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearClose = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
 
-  const openMenu = useCallback(
-    (menu: ActiveMenu) => {
-      clearClose();
-      setActiveMenu(menu);
-    },
-    [clearClose]
-  );
+  const openMenu = useCallback((menu: ActiveMenu) => {
+    clearClose();
+    setActiveMenu(menu);
+  }, [clearClose]);
 
   const scheduleClose = useCallback(() => {
     clearClose();
     timeoutRef.current = setTimeout(() => setActiveMenu(null), 150);
   }, [clearClose]);
 
+  const NavTrigger = ({ menu, label }: { menu: ActiveMenu; label: string }) => (
+    <div
+      className="hidden md:block relative"
+      onMouseEnter={() => openMenu(menu)}
+      onMouseLeave={scheduleClose}
+    >
+      <button
+        className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+          activeMenu === menu
+            ? "text-zinc-950"
+            : "text-zinc-500 hover:text-zinc-950"
+        }`}
+      >
+        {label}
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${activeMenu === menu ? "rotate-180" : ""}`} />
+      </button>
+      {activeMenu === menu && (
+        <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#DC2626]" />
+      )}
+    </div>
+  );
+
   return (
     <>
       {/* ── Nav bar ─────────────────────────────────────────────────────────── */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-md"
-        style={{ backgroundColor: "rgba(251,249,239,0.92)", borderColor: "#3c0212" }}
+        className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-100/80 backdrop-blur-md"
+        style={{ backgroundColor: "rgba(255,255,255,0.92)" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-[68px]">
@@ -266,99 +302,65 @@ export function Header() {
             <div className="flex items-center gap-1">
               <Link
                 href="/"
-                className="font-serif text-2xl font-bold pr-6 transition-opacity hover:opacity-70"
-                style={{ color: "#3c0212" }}
+                className="font-serif text-2xl font-bold pr-5 text-[#DC2626] hover:text-[#B91C1C] transition-colors"
                 onMouseEnter={() => setActiveMenu(null)}
               >
                 Ashram
               </Link>
 
-              {/* Features trigger */}
-              <div
-                className="hidden md:block relative"
-                onMouseEnter={() => openMenu("features")}
-                onMouseLeave={scheduleClose}
-              >
-                <button
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
-                    activeMenu === "features" ? "opacity-100" : "opacity-60 hover:opacity-100"
-                  }`}
-                  style={{ color: "#3c0212" }}
-                >
-                  Features
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 transition-transform duration-200 ${activeMenu === "features" ? "rotate-180" : ""}`}
-                  />
-                </button>
-              </div>
+              <NavTrigger menu="features" label="Features" />
 
-              {/* Pricing — direct link */}
+              <NavTrigger menu="solutions" label="Solutions" />
+
               <Link
-                href="/#pricing"
-                className="hidden md:block px-4 py-2 text-sm font-medium opacity-60 hover:opacity-100 transition-opacity"
-                style={{ color: "#3c0212" }}
+                href="/pricing"
+                className="hidden md:block px-3 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-950 transition-colors"
                 onMouseEnter={() => setActiveMenu(null)}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveMenu(null);
-                  document.querySelector("#pricing")?.scrollIntoView({ behavior: "smooth" });
-                }}
               >
                 Pricing
               </Link>
 
-              {/* Resources trigger */}
-              <div
-                className="hidden md:block relative"
-                onMouseEnter={() => openMenu("resources")}
-                onMouseLeave={scheduleClose}
+              <Link
+                href="/blog"
+                className="hidden md:block px-3 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-950 transition-colors"
+                onMouseEnter={() => setActiveMenu(null)}
               >
-                <button
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
-                    activeMenu === "resources" ? "opacity-100" : "opacity-60 hover:opacity-100"
-                  }`}
-                  style={{ color: "#3c0212" }}
-                >
-                  Resources
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 transition-transform duration-200 ${activeMenu === "resources" ? "rotate-180" : ""}`}
-                  />
-                </button>
-              </div>
+                Blog
+              </Link>
+
+              <NavTrigger menu="resources" label="Resources" />
             </div>
 
             {/* Right: CTAs + hamburger */}
             <div className="flex items-center gap-3">
-              <Button
-                asChild
-                variant="ghost"
-                className="hidden md:flex text-sm font-medium rounded-none opacity-70 hover:opacity-100 hover:bg-transparent"
-                style={{ color: "#3c0212" }}
+              <Link
+                href="/auth/login"
+                className="hidden md:block px-3 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-950 transition-colors"
                 onMouseEnter={() => setActiveMenu(null)}
               >
-                <Link href="/auth/login">Log in</Link>
-              </Button>
-              <Button
-                asChild
-                className="hidden md:flex rounded-none text-sm font-semibold"
-                style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
+                Log in
+              </Link>
+              <Link
+                href="/auth/sign-up"
+                className="hidden md:flex items-center gap-1.5 text-sm font-semibold px-5 py-2.5 bg-[#DC2626] text-white hover:bg-[#B91C1C] transition-colors"
                 onMouseEnter={() => setActiveMenu(null)}
               >
-                <Link href="/auth/sign-up">Get Started Free</Link>
-              </Button>
+                Get Started Free
+              </Link>
 
               {/* Mobile hamburger */}
               <button
-                className="md:hidden relative w-10 h-10 flex items-center justify-center"
-                style={{ color: "#3c0212" }}
+                className="md:hidden relative w-10 h-10 flex items-center justify-center text-zinc-700"
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="Toggle menu"
               >
-                <div className="w-5 h-5 relative flex items-center justify-center">
-                  <span className={`absolute w-full h-0.5 transition-all duration-300 origin-center ${mobileOpen ? "rotate-45" : "-translate-y-1.5"}`} style={{ backgroundColor: "#3c0212" }} />
-                  <span className={`absolute w-full h-0.5 transition-all duration-300 ${mobileOpen ? "opacity-0 scale-0" : "opacity-100"}`} style={{ backgroundColor: "#3c0212" }} />
-                  <span className={`absolute w-full h-0.5 transition-all duration-300 origin-center ${mobileOpen ? "-rotate-45" : "translate-y-1.5"}`} style={{ backgroundColor: "#3c0212" }} />
-                </div>
+                {mobileOpen ? <X className="h-5 w-5" /> : (
+                  <div className="space-y-1.5">
+                    <span className="block w-5 h-0.5 bg-current" />
+                    <span className="block w-5 h-0.5 bg-current" />
+                    <span className="block w-5 h-0.5 bg-current" />
+                  </div>
+                )}
               </button>
             </div>
           </div>
@@ -370,7 +372,7 @@ export function Header() {
         className={`fixed inset-0 z-30 hidden md:block transition-opacity duration-200 ${
           activeMenu ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
-        style={{ top: "68px", backgroundColor: "rgba(60,2,18,0.15)" }}
+        style={{ top: "68px", backgroundColor: "rgba(0,0,0,0.08)" }}
         onMouseEnter={() => setActiveMenu(null)}
       />
 
@@ -382,7 +384,8 @@ export function Header() {
         onMouseEnter={clearClose}
         onMouseLeave={scheduleClose}
       >
-        {activeMenu === "features" && <FeaturesMegaMenu isOpen />}
+        {activeMenu === "features"  && <FeaturesMegaMenu isOpen />}
+        {activeMenu === "solutions" && <SolutionsMegaMenu isOpen />}
         {activeMenu === "resources" && <ResourcesMegaMenu isOpen />}
       </div>
 
@@ -391,124 +394,95 @@ export function Header() {
         className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
           mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
-        style={{ backgroundColor: "rgba(60,2,18,0.4)", backdropFilter: "blur(4px)" }}
+        style={{ backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)" }}
         onClick={() => setMobileOpen(false)}
       />
 
       {/* ── Mobile sidebar ───────────────────────────────────────────────────── */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] z-50 md:hidden flex flex-col overflow-y-auto border-l transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] z-50 md:hidden flex flex-col overflow-y-auto border-l border-zinc-100 bg-white transition-transform duration-300 ${
           mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
-        style={{ backgroundColor: "#fbf9ef", borderColor: "#3c0212" }}
       >
         {/* Header row */}
-        <div
-          className="flex items-center justify-between px-6 h-[68px] border-b flex-shrink-0"
-          style={{ borderColor: "#3c0212" }}
-        >
+        <div className="flex items-center justify-between px-6 h-[68px] border-b border-zinc-100 flex-shrink-0">
           <Link
             href="/"
-            className="font-serif text-xl font-bold"
-            style={{ color: "#3c0212" }}
+            className="font-serif text-xl font-bold text-[#DC2626]"
             onClick={() => setMobileOpen(false)}
           >
             Ashram
           </Link>
-          <button
-            onClick={() => setMobileOpen(false)}
-            style={{ color: "#3c0212" }}
-          >
+          <button onClick={() => setMobileOpen(false)} className="text-zinc-500">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex flex-col flex-1 px-6 py-6 gap-1">
+        <div className="flex flex-col flex-1 px-6 py-6 gap-0.5">
           {/* Features accordion */}
-          <button
-            className="flex items-center justify-between w-full py-3 text-base font-medium border-b"
-            style={{ color: "#3c0212", borderColor: "#3c0212" }}
-            onClick={() => setMobileFeatureOpen(!mobileFeatureOpen)}
-          >
-            Features
-            <ChevronDown className={`h-4 w-4 transition-transform ${mobileFeatureOpen ? "rotate-180" : ""}`} />
-          </button>
-          {mobileFeatureOpen && (
-            <div className="py-3 pl-2 flex flex-col gap-3">
-              {[...featureHighlights, ...featureMore].map((f) => {
-                const Icon = f.icon;
-                return (
-                  <Link
-                    key={f.title}
-                    href={f.href}
-                    className="flex items-center gap-2.5 text-sm transition-opacity hover:opacity-60"
-                    style={{ color: "#3c0212" }}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                    {f.title}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Pricing */}
-          <button
-            className="flex items-center w-full py-3 text-base font-medium border-b"
-            style={{ color: "#3c0212", borderColor: "#3c0212" }}
-            onClick={() => {
-              setMobileOpen(false);
-              setTimeout(() => document.querySelector("#pricing")?.scrollIntoView({ behavior: "smooth" }), 100);
-            }}
-          >
-            Pricing
-          </button>
-
-          {/* Resources accordion */}
-          <button
-            className="flex items-center justify-between w-full py-3 text-base font-medium border-b"
-            style={{ color: "#3c0212", borderColor: "#3c0212" }}
-            onClick={() => setMobileResourceOpen(!mobileResourceOpen)}
-          >
-            Resources
-            <ChevronDown className={`h-4 w-4 transition-transform ${mobileResourceOpen ? "rotate-180" : ""}`} />
-          </button>
-          {mobileResourceOpen && (
-            <div className="py-3 pl-2 flex flex-col gap-3">
-              {resourceCards.map((c) => (
-                <Link
-                  key={c.title}
-                  href={c.href}
-                  className="text-sm transition-opacity hover:opacity-60"
-                  style={{ color: "#3c0212" }}
-                  onClick={() => setMobileOpen(false)}
+          {(["features", "solutions", "resources"] as const).map((menu) => {
+            const labels: Record<string, string> = { features: "Features", solutions: "Solutions", resources: "Resources" };
+            const links: Record<string, { label: string; href: string }[]> = {
+              features: [
+                ...featureHighlights.map((f) => ({ label: f.title, href: f.href })),
+                ...featureMore.map((f) => ({ label: f.title, href: f.href })),
+              ],
+              solutions: [
+                ...solutionsByType.map((s) => ({ label: s.label, href: s.href })),
+                ...solutionsByUseCase.map((s) => ({ label: s.label, href: s.href })),
+              ],
+              resources: resourceCards.map((c) => ({ label: c.title, href: c.href })),
+            };
+            return (
+              <div key={menu}>
+                <button
+                  className="flex items-center justify-between w-full py-3 text-sm font-medium text-zinc-700 border-b border-zinc-100"
+                  onClick={() => setMobileExpanded(mobileExpanded === menu ? null : menu)}
                 >
-                  {c.title}
-                </Link>
-              ))}
-            </div>
-          )}
+                  {labels[menu]}
+                  <ChevronDown className={`h-4 w-4 transition-transform ${mobileExpanded === menu ? "rotate-180" : ""}`} />
+                </button>
+                {mobileExpanded === menu && (
+                  <div className="py-3 pl-2 flex flex-col gap-2">
+                    {links[menu].map((l) => (
+                      <Link
+                        key={l.label}
+                        href={l.href}
+                        className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors py-0.5"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        {l.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <Link href="/pricing" className="py-3 text-sm font-medium text-zinc-700 border-b border-zinc-100 block" onClick={() => setMobileOpen(false)}>
+            Pricing
+          </Link>
+          <Link href="/blog" className="py-3 text-sm font-medium text-zinc-700 border-b border-zinc-100 block" onClick={() => setMobileOpen(false)}>
+            Blog
+          </Link>
 
           {/* Bottom CTAs */}
           <div className="mt-auto pt-6 flex flex-col gap-3">
-            <Button
-              asChild
-              variant="outline"
-              className="w-full rounded-none border-2 font-semibold"
-              style={{ borderColor: "#3c0212", color: "#3c0212", backgroundColor: "transparent" }}
+            <Link
+              href="/auth/login"
+              className="w-full border-2 border-zinc-900 text-center text-sm font-semibold py-3 text-zinc-900 hover:bg-zinc-50 transition-colors"
               onClick={() => setMobileOpen(false)}
             >
-              <Link href="/auth/login">Log in</Link>
-            </Button>
-            <Button
-              asChild
-              className="w-full rounded-none font-semibold"
-              style={{ backgroundColor: "#3c0212", color: "#fef9fb" }}
+              Log in
+            </Link>
+            <Link
+              href="/auth/sign-up"
+              className="w-full bg-[#DC2626] text-center text-sm font-semibold py-3 text-white hover:bg-[#B91C1C] transition-colors"
               onClick={() => setMobileOpen(false)}
             >
-              <Link href="/auth/sign-up">Get Started Free</Link>
-            </Button>
+              Get Started Free
+            </Link>
           </div>
         </div>
       </div>

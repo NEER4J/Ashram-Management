@@ -10,8 +10,25 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Ashram",
-  description: "Manage your Ashram operations efficiently",
+  title: {
+    template: "%s | Ashram",
+    default: "Ashram — Management Platform for Spiritual Communities",
+  },
+  description:
+    "All-in-one management platform for Ashrams, Temples, Yoga Institutes, and Trusts. Devotees, donations, events, accounting, courses — unified.",
+  openGraph: {
+    type: "website",
+    siteName: "Ashram",
+    title: "Ashram — Management Platform for Spiritual Communities",
+    description:
+      "All-in-one management platform for Ashrams, Temples, Yoga Institutes, and Trusts.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ashram — Management Platform for Spiritual Communities",
+    description:
+      "All-in-one management platform for Ashrams, Temples, Yoga Institutes, and Trusts.",
+  },
 };
 
 const geistSans = Geist({
@@ -34,7 +51,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} ${ptSerif.variable} antialiased`} style={{ backgroundColor: "#3c0212" }}>
+      <body className={`${geistSans.className} ${ptSerif.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

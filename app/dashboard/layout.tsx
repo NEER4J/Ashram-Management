@@ -230,7 +230,13 @@ const navigation = [
     items: [
       { title: "Reports", url: "/dashboard/reports", icon: FileText },
     ],
-  }
+  },
+  {
+    title: "System",
+    items: [
+      { title: "Settings", url: "/dashboard/settings", icon: Settings },
+    ],
+  },
 ];
 
 export default function DashboardLayout({
@@ -335,7 +341,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider data-theme="dashboard">
       <Sidebar variant="inset">
         {/* ===== SIDEBAR HEADER ===== */}
         <SidebarHeader>

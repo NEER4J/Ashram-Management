@@ -61,6 +61,22 @@ export default {
           700: "#7a1232",
           900: "#3c0212",
         },
+        marketing: {
+          red: "#DC2626",
+          redHov: "#B91C1C",
+          black: "#09090B",
+          white: "#FFFFFF",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
       },
       fontFamily: {
         serif: ["PT Serif", "serif"],

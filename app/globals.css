@@ -12,38 +12,62 @@
 
 @layer base {
   :root {
-    --background: 30 20% 98%;
-    --foreground: 20 14% 6%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
     --card: 0 0% 100%;
-    --card-foreground: 20 14% 6%;
+    --card-foreground: 0 0% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14% 6%;
-    --primary: 340 95% 12%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 0 72% 51%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 10% 95%;
-    --secondary-foreground: 20 14% 20%;
-    --muted: 30 10% 95%;
-    --muted-foreground: 20 6% 44%;
-    --accent: 340 60% 95%;
-    --accent-foreground: 340 95% 12%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 72% 96%;
+    --accent-foreground: 0 72% 30%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 10% 90%;
-    --input: 30 10% 88%;
-    --ring: 340 80% 40%;
-    --chart-1: 340 75% 45%;
+    --border: 0 0% 90%;
+    --input: 0 0% 88%;
+    --ring: 0 72% 51%;
+    --chart-1: 0 72% 51%;
     --chart-2: 190 85% 36%;
     --chart-3: 263 70% 50%;
     --chart-4: 38 92% 50%;
     --chart-5: 160 84% 39%;
     --radius: 0.75rem;
 
-    /* Ashram brand tokens */
+    /* Marketing brand tokens */
+    --marketing-red: #DC2626;
+    --marketing-red-hov: #B91C1C;
+    --marketing-black: #09090B;
+    --marketing-white: #FFFFFF;
+    --marketing-border: rgba(9,9,11,0.12);
+
+    /* Ashram brand tokens (kept for dashboard) */
     --ashram-50: #fef5f8;
     --ashram-100: #fde8ef;
     --ashram-500: #b82256;
     --ashram-700: #7a1232;
     --ashram-900: #3c0212;
+  }
+
+  /* Dashboard theme — restores maroon palette for /dashboard routes */
+  [data-theme="dashboard"] {
+    --primary: 340 95% 12%;
+    --primary-foreground: 0 0% 100%;
+    --background: 30 20% 98%;
+    --foreground: 20 14% 6%;
+    --secondary: 30 10% 95%;
+    --secondary-foreground: 20 14% 20%;
+    --muted: 30 10% 95%;
+    --muted-foreground: 20 6% 44%;
+    --accent: 340 60% 95%;
+    --accent-foreground: 340 95% 12%;
+    --border: 30 10% 90%;
+    --input: 30 10% 88%;
+    --ring: 340 80% 40%;
   }
 
   .dark {

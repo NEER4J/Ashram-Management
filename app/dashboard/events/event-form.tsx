@@ -208,9 +208,26 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                 }
             }
 
+            // Sanitize: convert empty strings to null for date, uuid, and url columns
+            const payload = {
+                ...data,
+                recurrence_end_date: data.recurrence_end_date || null,
+                recurrence_rule: (!data.recurrence_rule || data.recurrence_rule === "none") ? null : data.recurrence_rule,
+                coordinator_id: data.coordinator_id || null,
+                venue_id: data.venue_id || null,
+                speaker_facilitator_id: data.speaker_facilitator_id || null,
+                hero_image_url: data.hero_image_url || null,
+                facebook_url: data.facebook_url || null,
+                instagram_url: data.instagram_url || null,
+                youtube_url: data.youtube_url || null,
+                stream_url: data.stream_url || null,
+                capacity: data.capacity || null,
+                budget: data.budget || null,
+            }
+
             const { error } = initialData?.id
-                ? await supabase.from("temple_events").update(data).eq("id", initialData.id)
-                : await supabase.from("temple_events").insert(data)
+                ? await supabase.from("temple_events").update(payload).eq("id", initialData.id)
+                : await supabase.from("temple_events").insert(payload)
 
             if (error) throw error
 
@@ -656,7 +673,7 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="">None</SelectItem>
+                                        <SelectItem value="none">None</SelectItem>
                                         <SelectItem value="daily">Daily</SelectItem>
                                         <SelectItem value="weekly">Weekly</SelectItem>
                                         <SelectItem value="monthly">Monthly</SelectItem>
